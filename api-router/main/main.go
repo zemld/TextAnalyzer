@@ -11,6 +11,7 @@ func main() {
 	http.HandleFunc("/download", handlers.DownloadFileHandler)
 	http.HandleFunc("/analyze", handlers.AnalyzeFileHandler)
 	http.HandleFunc("/wordcloud", handlers.WordCloudHandler)
+	http.HandleFunc("/compare", handlers.CompareFilesHandler)
 
 	// TODO: по-хорошему здесь надо делать проверку исключений, чтобы если че программа не падала.
 	http.ListenAndServe(":8080", nil)

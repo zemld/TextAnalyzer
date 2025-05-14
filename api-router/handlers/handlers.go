@@ -19,3 +19,7 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: получаем на вход айди файла. Прокидываем запрос дальше на ядро.
 }
+
+func CompareFilesHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: получаем на вход айди файлов. Прокидываем запрос дальше на ядро.
+}

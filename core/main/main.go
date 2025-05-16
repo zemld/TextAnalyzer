@@ -3,15 +3,17 @@ package main
 import (
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/zemld/TextAnalyzer/core/handlers"
 )
 
 func main() {
-	http.HandleFunc("/upload", handlers.UploadFileHandler)
-	http.HandleFunc("/download", handlers.DownloadFileHandler)
-	http.HandleFunc("/analyze", handlers.AnalyzeFileHandler)
-	http.HandleFunc("/wordcloud", handlers.WordCloudHandler)
-	http.HandleFunc("/compare", handlers.CompareFilesHandler)
+	router := chi.NewRouter()
+	router.Post("/files/upload/", handlers.UploadFileHandler)
+	router.Get("/files/download/{id}", handlers.DownloadFileHandler)
+	router.Get("/files/analyze/{id}", handlers.AnalyzeFileHandler)
+	router.Get("/files/wordcloud/{id}", handlers.WordCloudHandler)
+	router.Get("/files/compare/{first-id}/{second-id}", handlers.CompareFilesHandler)
 
 	http.ListenAndServe(":8080", nil)
 }

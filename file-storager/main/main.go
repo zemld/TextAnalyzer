@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"github.com/zemld/TextAnalyzer/file-storager/handlers"
 )
 
 func main() {
-	router := mux.NewRouter()
+	router := chi.NewRouter()
 
-	router.HandleFunc("/files/upload", handlers.UploadFileHandler)
-	router.HandleFunc("/files/{id}", handlers.GetFileHandler)
-	router.HandleFunc("/files/analysis/{id}", handlers.SaveAnalysisResultHandler).Methods("POST")
-	router.HandleFunc("/files/analysis/{id}", handlers.GetAnalysisResultHandler).Methods("GET")
+	router.Post("/files/upload", handlers.UploadFileHandler)
+	router.Get("/files/{id}", handlers.GetFileHandler)
+	router.Post("/files/analysis/{id}", handlers.SaveAnalysisResultHandler)
+	router.Get("/files/analysis/{id}", handlers.GetAnalysisResultHandler)
 }

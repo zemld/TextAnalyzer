@@ -1,0 +1,75 @@
+services:
+  id_hash_db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    volumes:
+      - hashes:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: id_hash_db
+
+  analysis_db:
+    image: postgres:latest
+    ports:
+      - 5433:5432
+    volumes:
+      - analyze:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: analysis_db
+
+  file_db:
+    image: clickhouse:latest
+    ports:
+      - 9000:9000
+    volumes:
+      - files:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: default
+      CLICKHOUSE_DB: file_db
+
+  file-storager-service:
+    build:
+      context: ./file-storager
+      dockerfile: Dockerfile
+    ports:
+      - 8082:8082
+    depends_on:
+      - id_hash_db
+      - analysis_db
+      - file_db
+
+  file-analyzer-service:
+    build:
+      context: ./file-analyzer
+      dockerfile: Dockerfile
+    ports:
+      - 8083:8083
+
+  core-service:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    depends_on:
+      - file-analyzer-service
+      - file-storager-service
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - core-service
+
+volumes:
+  hashes:
+  analyze:
+  files:

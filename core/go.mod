@@ -1,4 +1,4 @@
-module github.com/zemld/TextAnalyzer
+module github.com/zemld/TextAnalyzer/core
 
 go 1.24.2
 

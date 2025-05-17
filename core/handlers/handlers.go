@@ -6,6 +6,15 @@ import (
 
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: получаем на вход файл. Считаем хэш от него и перекидываем запрос на file-storager.
+	hash, err := getHashOfFileFromRequest(w, r)
+	if err != nil {
+		return
+	}
+
+	client := http.Client{}
+	request, _ := http.NewRequest("GET", "http://file-storager-service:8083/files/"+hash, nil)
+
+	_, err = client.Do(request)
 }
 
 func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {

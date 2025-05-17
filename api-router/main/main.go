@@ -16,5 +16,5 @@ func main() {
 	router.Get("/files/compare/{first-id}/{second-id}", handlers.CompareFilesHandler)
 
 	// TODO: по-хорошему здесь надо делать проверку исключений, чтобы если че программа не падала.
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", router)
 }

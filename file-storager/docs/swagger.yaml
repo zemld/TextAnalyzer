@@ -1,0 +1,60 @@
+basePath: /
+host: file-storager-service:8083
+info:
+  contact: {}
+  description: Service for managing stored files in DB.
+  title: File Storage Manager
+  version: "1.0"
+paths:
+  /files/{id}:
+    get:
+      description: Download file from DB.
+      parameters:
+      - description: Id of file
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: formData
+        "401":
+          description: Unauthorized
+          schema:
+            type: json
+        "500":
+          description: Internal Server Error
+          schema:
+            type: json
+  /files/check/{hash}:
+    get:
+      description: Check if file exists in DB. One of hash or id is required.
+      parameters:
+      - description: Id of file
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: json
+        "401":
+          description: Unauthorized
+          schema:
+            type: json
+        "500":
+          description: Internal Server Error
+          schema:
+            type: json
+  /files/upload:
+    post:
+      responses: {}
+swagger: "2.0"

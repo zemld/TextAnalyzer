@@ -4,13 +4,35 @@ import (
 	"net/http"
 )
 
-func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход файл. Берем хэш от него и обращаемся в бд.
-	// если есть, то возвращаем айди файла. Если нет, то сохраняем в бд и возвращаем сгенерированное айди файла.
+// @description Check if file exists in DB. One of hash or id is required.
+// @param id query int true "Id of file"
+// @produce json
+// @success 200 {json} FileExistsResponse
+// @failure 401 {json} FileExistsResponse
+// @failure 500 {json} FileExistsResponse
+// @router /files/check/{hash} [get]
+func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
+// @description Upload file to DB.
+// @param file formData file true "File to upload"
+// @param id formData int true "Id of file"
+// @produce json
+// @success 200 {json} FileUploadDownloadResponse
+// @failure 500 {json} FileUploadDownloadResponse
+
+// @router /files/upload [post]
+func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+// @description Download file from DB.
+// @param id path int true "Id of file"
+// @produce plain
+// @success 200 formData file
+// @success 401 {json} FileUploadDownloadResponse
+// @failure 500 {json} FileUploadDownloadResponse
+// @router /files/{id} [get]
 func GetFileHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Проверяем наличие файла и берем файл из бд и отправляем его на выход.
 }
 
 func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {

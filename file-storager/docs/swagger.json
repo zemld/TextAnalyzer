@@ -1,0 +1,92 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Service for managing stored files in DB.",
+        "title": "File Storage Manager",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "file-storager-service:8083",
+    "basePath": "/",
+    "paths": {
+        "/files/check/{hash}": {
+            "get": {
+                "description": "Check if file exists in DB. One of hash or id is required.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id of file",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "json"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/upload": {
+            "post": {
+                "responses": {}
+            }
+        },
+        "/files/{id}": {
+            "get": {
+                "description": "Download file from DB.",
+                "produces": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id of file",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "formData"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "json"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

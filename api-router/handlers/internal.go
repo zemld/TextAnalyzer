@@ -3,8 +3,35 @@ package handlers
 import (
 	"bytes"
 	"io"
+	"log"
 	"mime/multipart"
+	"net/http"
 )
+
+func parseFileFromRequest(w http.ResponseWriter, r *http.Request) (*bytes.Buffer, string, error) {
+	log.Println("We are at upload file handler")
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, "hi from error catcher", http.StatusInternalServerError)
+		log.Fatalln(err.Error())
+		return nil, "", err
+	}
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "There is no file in request", http.StatusBadRequest)
+		log.Fatalln(err.Error())
+		return nil, "", err
+	}
+
+	buffer, contentType, err := createBodyRequest(&file, header)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Fatalln(err.Error())
+		return nil, "", err
+	}
+
+	return buffer, contentType, nil
+}
 
 func createBodyRequest(file *multipart.File, head *multipart.FileHeader) (*bytes.Buffer, string, error) {
 	var buffer bytes.Buffer

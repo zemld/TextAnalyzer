@@ -7,6 +7,11 @@ import (
 	"github.com/zemld/TextAnalyzer/api-router/handlers"
 )
 
+// @title API
+// @version 1.0
+// @description API for Text Analyzer.
+// @host api-router:8080
+// @BasePath /
 func main() {
 	router := chi.NewRouter()
 	router.Post("/files/upload", handlers.UploadFileHandler)

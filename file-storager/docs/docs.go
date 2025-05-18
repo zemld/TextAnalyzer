@@ -16,6 +16,35 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/files/analysis/{id}": {
+            "get": {
+                "description": "Get analysis result from DB. Result contains amount of paragraphs, sentences, words, symbols. Also contains average amount of sentences per paragraph, words per sentence, length of words.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id of file",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "body"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "body"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Save analysis result to DB.",
                 "consumes": [
@@ -49,7 +78,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/check/{id}": {
+        "/files/exists/{id}": {
             "get": {
                 "description": "Check if file exists in DB.",
                 "produces": [
@@ -107,6 +136,76 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Id of file",
                         "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "body"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "body"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/wordcloud/{id}": {
+            "get": {
+                "description": "Get word cloud from DB.",
+                "produces": [
+                    "image/png"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id of file",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "formData"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "body"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Save word cloud to DB.",
+                "consumes": [
+                    "image/png"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id of file",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Word cloud to save",
+                        "name": "wordCloud",
                         "in": "formData",
                         "required": true
                     }

@@ -31,6 +31,27 @@ paths:
           schema:
             type: body
   /files/analysis/{id}:
+    get:
+      description: Get analysis result from DB. Result contains amount of paragraphs,
+        sentences, words, symbols. Also contains average amount of sentences per paragraph,
+        words per sentence, length of words.
+      parameters:
+      - description: Id of file
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: body
+        "500":
+          description: Internal Server Error
+          schema:
+            type: body
     post:
       consumes:
       - application/json
@@ -52,7 +73,7 @@ paths:
           description: Internal Server Error
           schema:
             type: body
-  /files/check/{id}:
+  /files/exists/{id}:
     get:
       description: Check if file exists in DB.
       parameters:
@@ -94,6 +115,52 @@ paths:
         type: integer
       produces:
       - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: body
+        "500":
+          description: Internal Server Error
+          schema:
+            type: body
+  /files/wordcloud/{id}:
+    get:
+      description: Get word cloud from DB.
+      parameters:
+      - description: Id of file
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: formData
+        "500":
+          description: Internal Server Error
+          schema:
+            type: body
+    post:
+      consumes:
+      - image/png
+      description: Save word cloud to DB.
+      parameters:
+      - description: Id of file
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Word cloud to save
+        in: formData
+        name: wordCloud
+        required: true
+        type: file
+      produces:
+      - text/plain
       responses:
         "200":
           description: OK

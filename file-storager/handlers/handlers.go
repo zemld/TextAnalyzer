@@ -11,7 +11,7 @@ import (
 // @success 200 body FileExistsResponse
 // @failure 401 body FileExistsResponse
 // @failure 500 body FileExistsResponse
-// @router /files/check/{id} [get]
+// @router /files/exists/{id} [get]
 func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
@@ -55,6 +55,7 @@ func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @produce json
 // @success 200 body AnalysisResponse
 // @failure 500 body FileStatusResponse
+// @router /files/analysis/{id} [get]
 func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 }
 
@@ -66,6 +67,7 @@ func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @produce plain
 // @success 200 body FileStatusResponse
 // @failure 500 body FileStatusResponse
+// @router /files/wordcloud/{id} [post]
 func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 }
 
@@ -75,6 +77,7 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 // @produce png
 // @success 200 formData file
 // @failure 500 body FileStatusResponse
+// @router /files/wordcloud/{id} [get]
 func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: получаем на вход айди файла. Берем словоклуд из бд и отправляем его на выход.
 }

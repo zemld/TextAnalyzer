@@ -34,13 +34,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.AnalysisResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     }
                 }
@@ -51,7 +57,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "produces": [
-                    "text/plain"
+                    "application/json"
                 ],
                 "parameters": [
                     {
@@ -66,13 +72,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     }
                 }
@@ -97,19 +103,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileExistsResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileExistsResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileExistsResponse"
                         }
                     }
                 }
@@ -118,9 +124,6 @@ const docTemplate = `{
         "/files/upload": {
             "post": {
                 "description": "Upload file to DB.",
-                "consumes": [
-                    "text/plain"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -144,13 +147,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     }
                 }
@@ -175,13 +178,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "formData"
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     }
                 }
@@ -192,7 +201,7 @@ const docTemplate = `{
                     "image/png"
                 ],
                 "produces": [
-                    "text/plain"
+                    "application/json"
                 ],
                 "parameters": [
                     {
@@ -214,13 +223,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     }
                 }
@@ -251,15 +266,71 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.AnalysisResponse": {
+            "type": "object",
+            "properties": {
+                "average_length_of_words": {
+                    "type": "number"
+                },
+                "average_sentences_per_paragraph": {
+                    "type": "number"
+                },
+                "average_words_per_sentence": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "paragraphs_amount": {
+                    "type": "integer"
+                },
+                "sentences_amount": {
+                    "type": "integer"
+                },
+                "symbols_amount": {
+                    "type": "integer"
+                },
+                "words_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.FileExistsResponse": {
+            "type": "object",
+            "properties": {
+                "exists": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.FileStatusResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         }

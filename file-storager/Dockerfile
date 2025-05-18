@@ -1,5 +1,5 @@
 FROM golang:alpine
-WORKDIR /api
+WORKDIR /file-storager
 COPY . .
 RUN go mod tidy
 CMD ["go", "run", "main/main.go"]

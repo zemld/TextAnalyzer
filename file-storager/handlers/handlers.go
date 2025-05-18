@@ -8,21 +8,21 @@ import (
 // @tag.name File operations
 // @param id path int true "Id of file"
 // @produce json
-// @success 200 body FileExistsResponse
-// @failure 401 body FileExistsResponse
-// @failure 500 body FileExistsResponse
+// @success 200 {object} FileExistsResponse
+// @failure 401 {object} FileExistsResponse
+// @failure 500 {object} FileExistsResponse
 // @router /files/exists/{id} [get]
 func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // @description Upload file to DB.
 // @tag.name File operations
-// @accept plain
 // @param file formData file true "File to upload"
 // @param id formData int true "Id of file"
 // @produce json
-// @success 200 body FileStatusResponse
-// @failure 500 body FileStatusResponse
+// @success 200 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 }
@@ -31,9 +31,9 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @tag.name File operations
 // @param id path int true "Id of file"
 // @produce plain
-// @success 200 formData file
-// @success 401 body FileStatusResponse
-// @failure 500 body FileStatusResponse
+// @success 200 {formData} file
+// @success 401 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/{id} [get]
 func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 }
@@ -42,9 +42,10 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 // @tag.name File operations
 // @accept json
 // @param id path int true "Id of file"
-// @produce plain
-// @success 200 body FileStatusResponse
-// @failure 500 body FileStatusResponse
+// @produce json
+// @success 200 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/analysis/{id} [post]
 func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 }
@@ -53,8 +54,9 @@ func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @tag.name File operations
 // @param id path int true "Id of file"
 // @produce json
-// @success 200 body AnalysisResponse
-// @failure 500 body FileStatusResponse
+// @success 200 {object} AnalysisResponse
+// @failure 401 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/analysis/{id} [get]
 func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 }
@@ -64,9 +66,10 @@ func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @accept png
 // @param id path int true "Id of file"
 // @param wordCloud formData file true "Word cloud to save"
-// @produce plain
-// @success 200 body FileStatusResponse
-// @failure 500 body FileStatusResponse
+// @produce json
+// @success 200 {object} FileStatusResponse
+// @failure 401 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [post]
 func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 }
@@ -75,9 +78,9 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 // @tag.name File operations
 // @param id path int true "Id of file"
 // @produce png
-// @success 200 formData file
-// @failure 500 body FileStatusResponse
+// @success 200 {file} blob
+// @failure 401 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [get]
 func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Берем словоклуд из бд и отправляем его на выход.
 }

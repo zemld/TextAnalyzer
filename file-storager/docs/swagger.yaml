@@ -1,4 +1,40 @@
 basePath: /
+definitions:
+  handlers.AnalysisResponse:
+    properties:
+      average_length_of_words:
+        type: number
+      average_sentences_per_paragraph:
+        type: number
+      average_words_per_sentence:
+        type: number
+      id:
+        type: integer
+      paragraphs_amount:
+        type: integer
+      sentences_amount:
+        type: integer
+      symbols_amount:
+        type: integer
+      words_amount:
+        type: integer
+    type: object
+  handlers.FileExistsResponse:
+    properties:
+      exists:
+        type: boolean
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
+  handlers.FileStatusResponse:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
 host: file-storager-service:8083
 info:
   contact: {}
@@ -25,11 +61,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
   /files/analysis/{id}:
     get:
       description: Get analysis result from DB. Result contains amount of paragraphs,
@@ -47,11 +83,15 @@ paths:
         "200":
           description: OK
           schema:
-            type: body
+            $ref: '#/definitions/handlers.AnalysisResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
     post:
       consumes:
       - application/json
@@ -63,16 +103,16 @@ paths:
         required: true
         type: integer
       produces:
-      - text/plain
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
   /files/exists/{id}:
     get:
       description: Check if file exists in DB.
@@ -88,19 +128,17 @@ paths:
         "200":
           description: OK
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileExistsResponse'
         "401":
           description: Unauthorized
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileExistsResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileExistsResponse'
   /files/upload:
     post:
-      consumes:
-      - text/plain
       description: Upload file to DB.
       parameters:
       - description: File to upload
@@ -119,11 +157,11 @@ paths:
         "200":
           description: OK
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
   /files/wordcloud/{id}:
     get:
       description: Get word cloud from DB.
@@ -139,11 +177,15 @@ paths:
         "200":
           description: OK
           schema:
-            type: formData
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
     post:
       consumes:
       - image/png
@@ -160,14 +202,18 @@ paths:
         required: true
         type: file
       produces:
-      - text/plain
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: body
+            $ref: '#/definitions/handlers.FileStatusResponse'
 swagger: "2.0"

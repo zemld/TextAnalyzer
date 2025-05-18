@@ -22,6 +22,7 @@ func parseFileFromRequest(w http.ResponseWriter, r *http.Request) (*bytes.Buffer
 		log.Fatalln(err.Error())
 		return nil, "", err
 	}
+	defer file.Close()
 
 	buffer, contentType, err := createBodyRequest(&file, header)
 	if err != nil {

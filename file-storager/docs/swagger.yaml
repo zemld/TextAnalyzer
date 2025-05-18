@@ -25,17 +25,39 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: json
+            type: body
         "500":
           description: Internal Server Error
           schema:
-            type: json
-  /files/check/{hash}:
-    get:
-      description: Check if file exists in DB. One of hash or id is required.
+            type: body
+  /files/analysis/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Save analysis result to DB.
       parameters:
       - description: Id of file
-        in: query
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: body
+        "500":
+          description: Internal Server Error
+          schema:
+            type: body
+  /files/check/{id}:
+    get:
+      description: Check if file exists in DB.
+      parameters:
+      - description: Id of file
+        in: path
         name: id
         required: true
         type: integer
@@ -45,16 +67,40 @@ paths:
         "200":
           description: OK
           schema:
-            type: json
+            type: body
         "401":
           description: Unauthorized
           schema:
-            type: json
+            type: body
         "500":
           description: Internal Server Error
           schema:
-            type: json
+            type: body
   /files/upload:
     post:
-      responses: {}
+      consumes:
+      - text/plain
+      description: Upload file to DB.
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Id of file
+        in: formData
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: body
+        "500":
+          description: Internal Server Error
+          schema:
+            type: body
 swagger: "2.0"

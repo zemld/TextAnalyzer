@@ -6,7 +6,7 @@ type FileExistsResponse struct {
 	Status string `json:"status"`
 }
 
-type FileUploadDownloadResponse struct {
+type FileStatusResponse struct {
 	Id     int    `json:"id"`
 	Status string `json:"status"`
 }

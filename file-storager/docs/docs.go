@@ -15,9 +15,43 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/files/check/{hash}": {
+        "/files/analysis/{id}": {
+            "post": {
+                "description": "Save analysis result to DB.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id of file",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "body"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "body"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/check/{id}": {
             "get": {
-                "description": "Check if file exists in DB. One of hash or id is required.",
+                "description": "Check if file exists in DB.",
                 "produces": [
                     "application/json"
                 ],
@@ -26,7 +60,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Id of file",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -34,19 +68,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "json"
+                            "type": "body"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "json"
+                            "type": "body"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "json"
+                            "type": "body"
                         }
                     }
                 }
@@ -54,7 +88,43 @@ const docTemplate = `{
         },
         "/files/upload": {
             "post": {
-                "responses": {}
+                "description": "Upload file to DB.",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Id of file",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "body"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "body"
+                        }
+                    }
+                }
             }
         },
         "/files/{id}": {
@@ -82,13 +152,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "json"
+                            "type": "body"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "json"
+                            "type": "body"
                         }
                     }
                 }
@@ -107,8 +177,6 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "Service for managing stored files in DB.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	LeftDelim:        "{{",
-	RightDelim:       "}}",
 }
 
 func init() {

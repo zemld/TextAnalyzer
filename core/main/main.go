@@ -7,6 +7,11 @@ import (
 	"github.com/zemld/TextAnalyzer/core/handlers"
 )
 
+// @title Core Service
+// @version 1.0
+// @description Core service with bussiness logic.
+// @host core-service:8081
+// @BasePath /
 func main() {
 	router := chi.NewRouter()
 	router.Post("/files/upload/", handlers.UploadFileHandler)

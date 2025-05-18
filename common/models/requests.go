@@ -1,4 +1,4 @@
-package handlers
+package models
 
 type FileExistsResponse struct {
 	Exists bool   `json:"exists"`

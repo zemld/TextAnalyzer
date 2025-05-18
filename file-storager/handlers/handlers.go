@@ -57,3 +57,24 @@ func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 body FileStatusResponse
 func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 }
+
+// @description Save word cloud to DB.
+// @tag.name File operations
+// @accept png
+// @param id path int true "Id of file"
+// @param wordCloud formData file true "Word cloud to save"
+// @produce plain
+// @success 200 body FileStatusResponse
+// @failure 500 body FileStatusResponse
+func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+// @description Get word cloud from DB.
+// @tag.name File operations
+// @param id path int true "Id of file"
+// @produce png
+// @success 200 formData file
+// @failure 500 body FileStatusResponse
+func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: получаем на вход айди файла. Берем словоклуд из бд и отправляем его на выход.
+}

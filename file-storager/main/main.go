@@ -22,6 +22,8 @@ func main() {
 	router.Get("/files/{id}", handlers.GetFileHandler)
 	router.Post("/files/analysis/{id}", handlers.SaveAnalysisResultHandler)
 	router.Get("/files/analysis/{id}", handlers.GetAnalysisResultHandler)
+	router.Post("/files/wordcloud/{id}", handlers.SaveWordCloudHandler)
+	router.Get("/files/wordcloud/{id}", handlers.GetWordCloudHandler)
 
 	fs := http.FileServer(http.Dir("./docs"))
 	router.Handle("/docs/*", http.StripPrefix("/docs/", fs))

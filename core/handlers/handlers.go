@@ -53,6 +53,7 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 // @produce png
 // @success 200 {file} blob
 // @failure 500 {object} models.FileStatusResponse
+// @router /files/wordcloud/{id} [get]
 func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: получаем на вход айди файла. Проверяем есть ли файл в базе данных.
 	// Смотрим, есть ли уже результат облако. Если есть, то отправляем его на выход. Если нет, то перекидываем запрос на text-analyzer.
@@ -65,6 +66,7 @@ func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
 // @produce json
 // @success 200 {object} models.CompareResponse
 // @failure 500 {object} models.FileStatusResponse
+// @router /files/compare/{first-id}/{second-id} [get]
 func CompareFilesHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: получаем на вход айди файлов. Проверяем есть ли файлы в базе данных.
 	// Смотрим, есть ли уже результат сравнения. Если есть, то обрабатываем его и возвращаем результат - процент плагиата с указанием что схоже.

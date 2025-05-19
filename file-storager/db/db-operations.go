@@ -1,4 +1,4 @@
-package handlers
+package db
 
 import (
 	"context"
@@ -33,7 +33,7 @@ const (
 	analysisTableName       = "analysis"
 )
 
-func checkFileExistance(id int) bool {
+func CheckFileExistance(id int) bool {
 	if !doesHashesTableExist {
 		err := createTable(hashesTableName)
 		if err != nil {

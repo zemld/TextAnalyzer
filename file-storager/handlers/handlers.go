@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"github.com/go-chi/chi"
+	"github.com/zemld/TextAnalyzer/file-storager/db"
 	"net/http"
 	"strconv"
-
-	"github.com/go-chi/chi"
 )
 
 // @description Check if file exists in DB.
@@ -21,7 +21,7 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 		writeBadFileExistsResponse(&w)
 		return
 	}
-	if checkFileExistance(id) {
+	if db.CheckFileExistance(id) {
 		writeGoodFileExistsResponse(&w, id)
 		return
 	}

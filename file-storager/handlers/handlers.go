@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi"
 )
 
 // @description Check if file exists in DB.
@@ -13,6 +16,16 @@ import (
 // @failure 500 {object} FileExistsResponse
 // @router /files/exists/{id} [get]
 func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		writeBadFileExistsResponse(&w)
+		return
+	}
+	if checkFileExistance(id) {
+		writeGoodFileExistsResponse(&w, id)
+		return
+	}
+	writeBadFileExistsResponse(&w)
 }
 
 // @description Upload file to DB.

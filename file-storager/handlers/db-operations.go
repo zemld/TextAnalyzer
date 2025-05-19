@@ -1,0 +1,67 @@
+package handlers
+
+import (
+	"context"
+	"database/sql"
+	"time"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+)
+
+const (
+	pgStr           = "user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
+	createHashTable = "CREATE TABLE IF NOT EXISTS hashes " +
+		"(id SERIAL PRIMARY KEY, hash TEXT PRIMARY KEY)"
+	createAnalysisTable = "CREATE TABLE IF NOT EXISTS analysis" +
+		"(id INTEGER PRIMARY KEY, paragraphs_amount INTEGER, " +
+		"sentences_amount INTEGER, words_amount INTEGER, " +
+		"symbols_amount INTEGER, average_sentences_per_paragraph FLOAT, " +
+		"average_words_per_sentence FLOAT, average_length_of_words FLOAT)"
+	insertIntoHashTable     = "INSERT INTO hashes (hash) VALUES ($1)"
+	insertIntoAnalysisTable = "INSERT INTO analysis " +
+		"(paragraphs_amount, sentences_amount, words_amount, symbols_amount, " +
+		"average_sentences_per_paragraph, average_words_per_sentence, average_length_of_words) " +
+		"VALUES ($1, $2, $3, $4, $5, $6, $7)"
+	selectFromHashTable     = "SELECT id FROM hashes WHERE hash = $1"
+	selectFromAnalysisTable = "SELECT * FROM analysis WHERE id = $1"
+)
+
+func checkFileExistance(id int) bool {
+	if !checkTableExistance("hashes") {
+		return false
+	}
+
+	db, err := sql.Open("pgx", pgStr)
+	if err != nil {
+		return false
+	}
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var foundId int
+	err = db.QueryRowContext(ctx, selectFromHashTable, id).Scan(&foundId)
+	if err != nil {
+		return false
+	}
+	return foundId == id
+}
+
+func checkTableExistance(tableName string) bool {
+	db, err := sql.Open("pgx", pgStr)
+	if err != nil {
+		return false
+	}
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var exists bool
+	err = db.QueryRowContext(ctx, "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = $1)", tableName).Scan(&exists)
+	if err != nil {
+		return false
+	}
+	return exists
+}

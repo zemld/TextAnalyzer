@@ -8,6 +8,11 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+var (
+	doesHashesTableExist   = false
+	doesAnalysisTableExist = false
+)
+
 const (
 	pgStr           = "user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
 	createHashTable = "CREATE TABLE IF NOT EXISTS hashes " +
@@ -24,10 +29,17 @@ const (
 		"VALUES ($1, $2, $3, $4, $5, $6, $7)"
 	selectFromHashTable     = "SELECT id FROM hashes WHERE hash = $1"
 	selectFromAnalysisTable = "SELECT * FROM analysis WHERE id = $1"
+	hashesTableName         = "hashes"
+	analysisTableName       = "analysis"
 )
 
 func checkFileExistance(id int) bool {
-	if !checkTableExistance("hashes") {
+	if !doesHashesTableExist {
+		err := createTable(hashesTableName)
+		if err != nil {
+			return false
+		}
+		doesHashesTableExist = true
 		return false
 	}
 
@@ -48,20 +60,25 @@ func checkFileExistance(id int) bool {
 	return foundId == id
 }
 
-func checkTableExistance(tableName string) bool {
+func createTable(tableName string) error {
 	db, err := sql.Open("pgx", pgStr)
 	if err != nil {
-		return false
+		return err
 	}
 	defer db.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var exists bool
-	err = db.QueryRowContext(ctx, "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = $1)", tableName).Scan(&exists)
-	if err != nil {
-		return false
+	if tableName == hashesTableName {
+		_, err = db.ExecContext(ctx, createHashTable)
+	} else if tableName == analysisTableName {
+		_, err = db.ExecContext(ctx, createAnalysisTable)
 	}
-	return exists
+
+	if err != nil {
+		return err
+	}
+	doesHashesTableExist = true
+	return nil
 }

@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"github.com/go-chi/chi"
-	"github.com/zemld/TextAnalyzer/file-storager/db"
+	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi"
+	"github.com/zemld/TextAnalyzer/file-storager/db"
 )
 
 // @description Check if file exists in DB.
@@ -38,6 +40,21 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(10 << 20)
+	id, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil {
+		writeFileStatusResponse(&w, id, "Wrong id. Cannot upload file.")
+		return
+	}
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		writeFileStatusResponse(&w, id, "Cannot parse file.")
+		return
+	}
+	defer file.Close()
+
+	buf, err := io.ReadAll(file)
+	db.StoreDocument(buf, id, db.FilesCollection)
 }
 
 // @description Download file from DB.

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -14,20 +15,26 @@ import (
 // @param id path int true "File ID"
 // @produce json
 // @success 200 {object} FileExistsResponse
-// @failure 401 {object} FileExistsResponse
+// @failure 400 {object} FileStatusResponse
 // @failure 500 {object} FileExistsResponse
 // @router /files/exists/{id} [get]
 func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	setAccessControlForOrigin(w, r)
 	if err != nil {
-		writeBadFileExistsResponse(&w)
+		log.Fatalln("Something went wrong while parsing id.")
+		writeFileStatusResponse(w, -1, "Wrong id. Cannot upload file.")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	log.Printf("Parsed id is %d.\n", id)
 	if db.CheckFileExistance(id) {
-		writeGoodFileExistsResponse(&w, id)
+		log.Printf("File with id %d exists in DB.\n", id)
+		writeGoodFileExistsResponse(w, id)
 		return
 	}
-	writeBadFileExistsResponse(&w)
+	log.Printf("File with id %d does not exist in DB.\n", id)
+	writeBadFileExistsResponse(w)
 }
 
 // @description Upload file to DB.
@@ -41,14 +48,17 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
+	setAccessControlForOrigin(w, r)
 	id, err := strconv.Atoi(r.FormValue("id"))
 	if err != nil {
-		writeFileStatusResponse(&w, id, "Wrong id. Cannot upload file.")
+		writeFileStatusResponse(w, id, "Wrong id. Cannot upload file.")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		writeFileStatusResponse(&w, id, "Cannot parse file.")
+		writeFileStatusResponse(w, id, "Cannot parse file.")
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
@@ -66,8 +76,26 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/{id} [get]
 func GetFileHandler(w http.ResponseWriter, r *http.Request) {
+	setAccessControlForOrigin(w, r)
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		writeFileStatusResponse(w, id, "Wrong id. Cannot download file.")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	file, err := db.GetDocument(id, db.FilesCollection)
+	if err != nil {
+		writeFileStatusResponse(w, id, "Cannot download file.")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "text/plain")
+	w.Write(file)
 }
 
+// TODO: добавить описание json параметра с результатом анализа.
 // @description Save analysis result to DB.
 // @tag.name File operations
 // @accept json

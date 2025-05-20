@@ -28,3 +28,7 @@ func writeFileStatusResponse(w http.ResponseWriter, id int, msg string) {
 	repsJson, _ := json.Marshal(FileStatusResponse{id, msg})
 	w.Write(repsJson)
 }
+
+func setAccessControlForOrigin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+}

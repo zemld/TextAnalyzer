@@ -27,7 +27,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./docs"))
 	router.Handle("/docs/*", http.StripPrefix("/docs/", fs))
-	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8083/docs/swagger.json")))
+	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8082/docs/swagger.json")))
 
-	http.ListenAndServe(":8083", router)
+	http.ListenAndServe(":8082", router)
 }

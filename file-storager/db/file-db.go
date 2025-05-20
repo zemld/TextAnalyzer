@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	dbName string = "mg"
+	dbName        string = "mg"
+	connectionURI string = "mongodb://root:password@localhost:27017"
 )
 
 const (
@@ -22,7 +23,7 @@ func StoreDocument(f []byte, id int, collectionName string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://root:password@localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionURI))
 	if err != nil {
 		return err
 	}
@@ -34,4 +35,23 @@ func StoreDocument(f []byte, id int, collectionName string) error {
 		return err
 	}
 	return nil
+}
+
+func GetDocument(id int, collectionName string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionURI))
+	if err != nil {
+		return nil, err
+	}
+	defer client.Disconnect(ctx)
+
+	db := client.Database(dbName)
+	var result bson.M
+	err = db.Collection(collectionName).FindOne(ctx, bson.M{"_id": id}).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result["file"].([]byte), nil
 }

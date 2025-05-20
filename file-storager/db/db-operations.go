@@ -27,10 +27,11 @@ const (
 		"(paragraphs_amount, sentences_amount, words_amount, symbols_amount, " +
 		"average_sentences_per_paragraph, average_words_per_sentence, average_length_of_words) " +
 		"VALUES ($1, $2, $3, $4, $5, $6, $7)"
-	selectFromHashTable     = "SELECT id FROM hashes WHERE hash = $1"
-	selectFromAnalysisTable = "SELECT * FROM analysis WHERE id = $1"
-	hashesTableName         = "hashes"
-	analysisTableName       = "analysis"
+	selectForCheckThatFileExists = "SELECT id FROM hashes WHERE id = $1"
+	selectForDuplicates          = "SELECT id FROM hashes WHERE hash = $1"
+	selectFromAnalysisTable      = "SELECT * FROM analysis WHERE id = $1"
+	hashesTableName              = "hashes"
+	analysisTableName            = "analysis"
 )
 
 func CheckFileExistance(id int) bool {
@@ -53,7 +54,7 @@ func CheckFileExistance(id int) bool {
 	defer cancel()
 
 	var foundId int
-	err = db.QueryRowContext(ctx, selectFromHashTable, id).Scan(&foundId)
+	err = db.QueryRowContext(ctx, selectForCheckThatFileExists, id).Scan(&foundId)
 	if err != nil {
 		return false
 	}
@@ -81,4 +82,31 @@ func createTable(tableName string) error {
 	}
 	doesHashesTableExist = true
 	return nil
+}
+
+func GetAnalysisResult(id int) (map[string]any, error) {
+	db, err := sql.Open("pgx", pgStr)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result := make(map[string]any)
+	result["paragraphs_amount"] = nil
+	result["sentences_amount"] = nil
+	result["words_amount"] = nil
+	result["symbols_amount"] = nil
+	result["average_sentence_per_paragraph"] = nil
+	result["average_words_per_sentence"] = nil
+	result["average_length_of_words"] = nil
+
+	err = db.QueryRowContext(ctx, selectFromAnalysisTable, id).Scan(result["paragraphs_amount"],
+		result["sentences_amount"], result["words_amount"], result["symbols_amount"],
+		result["average_sentence_per_paragraph"], result["average_words_per_sentence"],
+		result["average_length_of_words"])
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }

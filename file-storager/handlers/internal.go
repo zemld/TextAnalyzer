@@ -3,9 +3,26 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi"
+)
+
+const (
+	incorrectIdMsg = "Incorrect ID."
 )
 
 // TODO: имеет смысл добавить кастомный тип для id.
+
+func parseIdFromRequest(w http.ResponseWriter, r *http.Request) int {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		writeFileStatusResponse(w, -1, incorrectIdMsg)
+		w.WriteHeader(http.StatusBadRequest)
+		return -1
+	}
+	return id
+}
 
 func writeFileExistsResponse(w http.ResponseWriter, resp FileExistsResponse) {
 	w.Header().Add("Content-Type", "application/json")
@@ -31,4 +48,9 @@ func writeFileStatusResponse(w http.ResponseWriter, id int, msg string) {
 
 func setAccessControlForOrigin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+}
+
+func makeResponseFromSelectingAnalysisResult(id int, result map[string]any) AnalysisResponse {
+	// TODO: вспомнить, как пишется type assertion.
+	return AnalysisResponse{Id: id}
 }

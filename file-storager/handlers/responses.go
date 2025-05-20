@@ -11,7 +11,7 @@ type FileStatusResponse struct {
 	Status string `json:"status"`
 }
 
-type AnalysisResponse struct {
+type Analysis struct {
 	Id                           int     `json:"id"`
 	ParagraphsAmount             int     `json:"paragraphs_amount"`
 	SentencesAmount              int     `json:"sentences_amount"`

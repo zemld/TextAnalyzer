@@ -34,6 +34,17 @@ const (
 	analysisTableName            = "analysis"
 )
 
+type Analysis struct {
+	Id                           int
+	ParagraphsAmount             int
+	SentencesAmount              int
+	WordsAmount                  int
+	SymbolsAmount                int
+	AverageSentencesPerParagraph float64
+	AverageWordsPerSentence      float64
+	AverageLengthOfWords         float64
+}
+
 func CheckFileExistance(id int) bool {
 	if !doesHashesTableExist {
 		err := createTable(hashesTableName)
@@ -89,6 +100,15 @@ func GetAnalysisResult(id int) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
+
+	if !doesAnalysisTableExist {
+		err := createTable(analysisTableName)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -109,4 +129,36 @@ func GetAnalysisResult(id int) (map[string]any, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func StoreAnalysisResult(analysis Analysis) error {
+	db, err := sql.Open("pgx", pgStr)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if !doesAnalysisTableExist {
+		err := createTable(analysisTableName)
+		if err != nil {
+			return err
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = db.ExecContext(ctx, insertIntoAnalysisTable,
+		analysis.ParagraphsAmount,
+		analysis.SentencesAmount,
+		analysis.WordsAmount,
+		analysis.SymbolsAmount,
+		analysis.AverageSentencesPerParagraph,
+		analysis.AverageWordsPerSentence,
+		analysis.AverageLengthOfWords)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

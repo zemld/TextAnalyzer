@@ -1,4 +1,4 @@
-package db
+package handlers
 
 import (
 	"context"
@@ -15,11 +15,11 @@ const (
 )
 
 const (
-	FilesCollection     string = "files"
-	WordCloudCollection string = "wordcloud"
+	filesCollection     string = "files"
+	wordCloudCollection string = "wordcloud"
 )
 
-func StoreDocument(f []byte, id int, collectionName string) error {
+func storeDocument(f []byte, id int, collectionName string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -37,7 +37,7 @@ func StoreDocument(f []byte, id int, collectionName string) error {
 	return nil
 }
 
-func GetDocument(id int, collectionName string) ([]byte, error) {
+func getDocument(id int, collectionName string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

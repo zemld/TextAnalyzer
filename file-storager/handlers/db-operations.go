@@ -1,4 +1,4 @@
-package db
+package handlers
 
 import (
 	"context"
@@ -34,18 +34,7 @@ const (
 	analysisTableName            = "analysis"
 )
 
-type Analysis struct {
-	Id                           int
-	ParagraphsAmount             int
-	SentencesAmount              int
-	WordsAmount                  int
-	SymbolsAmount                int
-	AverageSentencesPerParagraph float64
-	AverageWordsPerSentence      float64
-	AverageLengthOfWords         float64
-}
-
-func CheckFileExistance(id int) bool {
+func checkFileExistance(id int) bool {
 	if !doesHashesTableExist {
 		err := createTable(hashesTableName)
 		if err != nil {
@@ -95,7 +84,7 @@ func createTable(tableName string) error {
 	return nil
 }
 
-func GetAnalysisResult(id int) (map[string]any, error) {
+func getAnalysisResult(id int) (map[string]any, error) {
 	db, err := sql.Open("pgx", pgStr)
 	if err != nil {
 		return nil, err
@@ -131,7 +120,7 @@ func GetAnalysisResult(id int) (map[string]any, error) {
 	return result, nil
 }
 
-func StoreAnalysisResult(analysis Analysis) error {
+func storeAnalysisResult(analysis Analysis) error {
 	db, err := sql.Open("pgx", pgStr)
 	if err != nil {
 		return err

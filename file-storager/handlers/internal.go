@@ -17,8 +17,7 @@ const (
 func parseIdFromRequest(w http.ResponseWriter, r *http.Request) int {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		writeFileStatusResponse(w, -1, incorrectIdMsg)
-		w.WriteHeader(http.StatusBadRequest)
+		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
 		return -1
 	}
 	return id
@@ -40,17 +39,18 @@ func writeGoodFileExistsResponse(w http.ResponseWriter, id int) {
 	writeFileExistsResponse(w, resp)
 }
 
-func writeFileStatusResponse(w http.ResponseWriter, id int, msg string) {
+func writeFileStatusResponse(w http.ResponseWriter, id int, msg string, statusCode int) {
 	w.Header().Add("Content-Type", "application/json")
 	repsJson, _ := json.Marshal(FileStatusResponse{id, msg})
 	w.Write(repsJson)
+	w.WriteHeader(statusCode)
 }
 
 func setAccessControlForOrigin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 }
 
-func makeResponseFromSelectingAnalysisResult(id int, result map[string]any) AnalysisResponse {
+func makeResponseFromSelectingAnalysisResult(id int, result map[string]any) Analysis {
 	// TODO: вспомнить, как пишется type assertion.
-	return AnalysisResponse{Id: id}
+	return Analysis{Id: id}
 }

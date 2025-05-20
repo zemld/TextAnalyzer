@@ -52,8 +52,8 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		writeFileStatusResponse(w, id, "Cannot parse file.")
-		w.WriteHeader(http.StatusInternalServerError)
+		writeFileStatusResponse(w, id, "Cannot parse file.",
+			http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
@@ -79,8 +79,8 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, err := db.GetDocument(id, db.FilesCollection)
 	if err != nil {
-		writeFileStatusResponse(w, id, "Cannot download file.")
-		w.WriteHeader(http.StatusInternalServerError)
+		writeFileStatusResponse(w, id, "Cannot download file.",
+			http.StatusInternalServerError)
 		return
 	}
 
@@ -93,7 +93,7 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 // @tag.name File operations
 // @accept json
 // @param id path int true "File ID"
-// @param
+// @param analysis formData Analysis true "Result of file analysis"
 // @produce json
 // @success 200 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse
@@ -148,8 +148,9 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 	cloud, _, err := r.FormFile("wordCloud")
 	if err != nil {
-		writeFileStatusResponse(w, id, "Cannot get word cloud from request.")
-		w.WriteHeader(http.StatusBadRequest)
+		writeFileStatusResponse(w, id,
+			"Cannot get word cloud from request.",
+			http.StatusBadRequest)
 		return
 	}
 	// TODO: пересмотреть работу с картинкой.
@@ -157,8 +158,9 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	cloudBytes, _ = io.ReadAll(cloud)
 	err = db.StoreDocument(cloudBytes, id, db.WordCloudCollection)
 	if err != nil {
-		writeFileStatusResponse(w, id, "Something went wrong during storing wordcloud.")
-		w.WriteHeader(http.StatusInternalServerError)
+		writeFileStatusResponse(w, id,
+			"Something went wrong during storing wordcloud.",
+			http.StatusInternalServerError)
 		return
 	}
 
@@ -182,8 +184,9 @@ func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err := db.GetDocument(id, db.WordCloudCollection)
 	if err != nil {
-		writeFileStatusResponse(w, id, "Something went wrong during getting wordcloud.")
-		w.WriteHeader(http.StatusInternalServerError)
+		writeFileStatusResponse(w, id,
+			"Something went wrong during getting wordcloud.",
+			http.StatusInternalServerError)
 		return
 	}
 

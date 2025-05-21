@@ -16,7 +16,7 @@ import (
 // @failure 500 {object} FileExistsResponse
 // @router /files/exists/{id} [get]
 func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
-	id := parseIdFromRequest(w, r)
+	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
 	}
@@ -41,7 +41,7 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	id := parseIdFromRequest(w, r)
+	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
 	}
@@ -57,6 +57,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	buf, _ := io.ReadAll(file)
 	storeDocument(buf, id, filesCollection)
+	writeFileStatusResponse(w, id, "File uploaded.", http.StatusOK)
 }
 
 // @description Download file from DB.
@@ -68,7 +69,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/{id} [get]
 func GetFileHandler(w http.ResponseWriter, r *http.Request) {
-	id := parseIdFromRequest(w, r)
+	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
 	}
@@ -95,7 +96,7 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/analysis/{id} [post]
 func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
-	id := parseIdFromRequest(w, r)
+	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
 	}
@@ -118,6 +119,7 @@ func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storeAnalysisResult(analysis)
+	writeFileStatusResponse(w, id, "Analysis result saved.", http.StatusOK)
 }
 
 // @description Get analysis result from DB. Result contains amount of paragraphs, sentences, words, symbols. Also contains average amount of sentences per paragraph, words per sentence, length of words.
@@ -129,7 +131,7 @@ func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/analysis/{id} [get]
 func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
-	id := parseIdFromRequest(w, r)
+	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
 	}
@@ -149,7 +151,7 @@ func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [post]
 func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	id := parseIdFromRequest(w, r)
+	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
 	}
@@ -185,7 +187,7 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [get]
 func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	id := parseIdFromRequest(w, r)
+	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
 	}

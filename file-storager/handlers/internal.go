@@ -14,7 +14,7 @@ const (
 
 // TODO: имеет смысл добавить кастомный тип для id.
 
-func parseIdFromRequest(w http.ResponseWriter, r *http.Request) int {
+func parseIdFromRequestAndCreateResponse(w http.ResponseWriter, r *http.Request) int {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)

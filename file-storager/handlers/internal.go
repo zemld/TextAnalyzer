@@ -51,6 +51,21 @@ func setAccessControlForOrigin(w http.ResponseWriter, r *http.Request) {
 }
 
 func makeResponseFromSelectingAnalysisResult(id int, result map[string]any) Analysis {
-	// TODO: вспомнить, как пишется type assertion.
-	return Analysis{Id: id}
+	return Analysis{
+		Id:                           id,
+		ParagraphsAmount:             result["paragraphs_amount"].(int),
+		SentencesAmount:              result["sentences_amount"].(int),
+		WordsAmount:                  result["words_amount"].(int),
+		SymbolsAmount:                result["symbols_amount"].(int),
+		AverageSentencesPerParagraph: result["average_sentences_per_paragraph"].(float64),
+		AverageWordsPerSentence:      result["average_words_per_sentence"].(float64),
+		AverageLengthOfWords:         result["average_length_of_words"].(float64),
+	}
+}
+
+func writeAnalysisResponse(w http.ResponseWriter, analysis Analysis) {
+	w.Header().Add("Content-Type", "application/json")
+	encodedAnalysis, _ := json.Marshal(analysis)
+	w.Write(encodedAnalysis)
+	w.WriteHeader(http.StatusOK)
 }

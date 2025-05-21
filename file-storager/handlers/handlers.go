@@ -1,11 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
-
-	"github.com/zemld/TextAnalyzer/file-storager/db"
 )
 
 // @description Check if file exists in DB.
@@ -17,14 +16,13 @@ import (
 // @failure 500 {object} FileExistsResponse
 // @router /files/exists/{id} [get]
 func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
-	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequest(w, r)
 	if id == -1 {
 		return
 	}
 
 	log.Printf("Parsed id is %d.\n", id)
-	if !db.CheckFileExistance(id) {
+	if !checkFileExistance(id) {
 		log.Printf("File with id %d does not exist in DB.\n", id)
 		writeBadFileExistsResponse(w)
 		return
@@ -43,7 +41,6 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequest(w, r)
 	if id == -1 {
 		return
@@ -58,8 +55,8 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	buf, err := io.ReadAll(file)
-	db.StoreDocument(buf, id, db.FilesCollection)
+	buf, _ := io.ReadAll(file)
+	storeDocument(buf, id, filesCollection)
 }
 
 // @description Download file from DB.
@@ -71,13 +68,12 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/{id} [get]
 func GetFileHandler(w http.ResponseWriter, r *http.Request) {
-	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequest(w, r)
 	if id == -1 {
 		return
 	}
 
-	file, err := db.GetDocument(id, db.FilesCollection)
+	file, err := getDocument(id, filesCollection)
 	if err != nil {
 		writeFileStatusResponse(w, id, "Cannot download file.",
 			http.StatusInternalServerError)
@@ -88,7 +84,6 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(file)
 }
 
-// TODO: добавить описание json параметра с результатом анализа.
 // @description Save analysis result to DB.
 // @tag.name File operations
 // @accept json
@@ -100,32 +95,47 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/analysis/{id} [post]
 func SaveAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
-	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequest(w, r)
 	if id == -1 {
 		return
 	}
 
-	// TODO: добавить чтение json файла.
+	r.ParseMultipartForm(10 << 20)
+	file, _, err := r.FormFile("analysis")
+	if err != nil {
+		writeFileStatusResponse(w, id, "Cannot read analysis result.",
+			http.StatusInternalServerError)
+		return
+	}
+
+	encodedFile, _ := io.ReadAll(file)
+	analysis := Analysis{}
+	err = json.Unmarshal(encodedFile, &analysis)
+	if err != nil {
+		writeFileStatusResponse(w, id,
+			"Something went wrong during parsing analysis.",
+			http.StatusInternalServerError)
+		return
+	}
+	storeAnalysisResult(analysis)
 }
 
 // @description Get analysis result from DB. Result contains amount of paragraphs, sentences, words, symbols. Also contains average amount of sentences per paragraph, words per sentence, length of words.
 // @tag.name File operations
 // @param id path int true "File ID"
 // @produce json
-// @success 200 {object} AnalysisResponse
+// @success 200 {object} Analysis
 // @failure 401 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse
 // @router /files/analysis/{id} [get]
 func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
-	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequest(w, r)
 	if id == -1 {
 		return
 	}
-	// TODO: подумать, как преобразовывать результаты анализа к типу ответа и возвращать его.
-	_, _ = db.GetAnalysisResult(id)
-
+	mappedAnalysisResult, _ := getAnalysisResult(id)
+	writeAnalysisResponse(w,
+		makeResponseFromSelectingAnalysisResult(id, mappedAnalysisResult))
 }
 
 // @description Save word cloud to DB.
@@ -139,7 +149,6 @@ func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [post]
 func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequest(w, r)
 	if id == -1 {
 		return
@@ -156,7 +165,7 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: пересмотреть работу с картинкой.
 	var cloudBytes []byte
 	cloudBytes, _ = io.ReadAll(cloud)
-	err = db.StoreDocument(cloudBytes, id, db.WordCloudCollection)
+	err = storeDocument(cloudBytes, id, wordCloudCollection)
 	if err != nil {
 		writeFileStatusResponse(w, id,
 			"Something went wrong during storing wordcloud.",
@@ -176,13 +185,12 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [get]
 func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequest(w, r)
 	if id == -1 {
 		return
 	}
 
-	_, err := db.GetDocument(id, db.WordCloudCollection)
+	_, err := getDocument(id, wordCloudCollection)
 	if err != nil {
 		writeFileStatusResponse(w, id,
 			"Something went wrong during getting wordcloud.",

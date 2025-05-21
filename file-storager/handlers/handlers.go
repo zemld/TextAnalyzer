@@ -56,7 +56,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	buf, _ := io.ReadAll(file)
-	storeDocument(buf, id, filesCollection)
+	storeDocument(buf, id)
 	writeFileStatusResponse(w, id, "File uploaded.", http.StatusOK)
 }
 
@@ -74,7 +74,7 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := getDocument(id, filesCollection)
+	file, err := getDocument(id)
 	if err != nil {
 		writeFileStatusResponse(w, id, "Cannot download file.",
 			http.StatusInternalServerError)
@@ -83,6 +83,7 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "text/plain")
 	w.Write(file)
+	w.WriteHeader(http.StatusOK)
 }
 
 // @description Save analysis result to DB.
@@ -156,7 +157,6 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseMultipartForm(10 << 20)
 	cloud, _, err := r.FormFile("wordCloud")
 	if err != nil {
 		writeFileStatusResponse(w, id,
@@ -164,11 +164,8 @@ func SaveWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 			http.StatusBadRequest)
 		return
 	}
-	// TODO: пересмотреть работу с картинкой.
-	var cloudBytes []byte
-	cloudBytes, _ = io.ReadAll(cloud)
-	err = storeDocument(cloudBytes, id, wordCloudCollection)
-	if err != nil {
+
+	if err = storeWordCloud(id, cloud); err != nil {
 		writeFileStatusResponse(w, id,
 			"Something went wrong during storing wordcloud.",
 			http.StatusInternalServerError)
@@ -192,7 +189,7 @@ func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := getDocument(id, wordCloudCollection)
+	cloud, err := getWordCloud(id)
 	if err != nil {
 		writeFileStatusResponse(w, id,
 			"Something went wrong during getting wordcloud.",
@@ -200,5 +197,7 @@ func GetWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: разобраться как возвращать картинку из ручки.
+	w.Header().Add("Content-Type", "image/png")
+	w.WriteHeader(http.StatusOK)
+	w.Write(cloud)
 }

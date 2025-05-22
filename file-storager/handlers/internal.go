@@ -2,21 +2,35 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/go-chi/chi"
 )
 
 const (
 	incorrectIdMsg = "Incorrect ID."
 )
 
+const (
+	existsPattern    = "/files/exists/{id}"
+	uploadPattern    = "/files/upload"
+	getPattern       = "/files/{id}"
+	analysisPattern  = "/files/analysis/{id}"
+	wordCloudPattern = "/files/wordcloud/{id}"
+)
+
 // TODO: имеет смысл добавить кастомный тип для id.
 
 func parseIdFromRequestAndCreateResponse(w http.ResponseWriter, r *http.Request) int {
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	idStr, err := parseParamFromUrl(r.URL.Path, existsPattern, "{id}")
 	if err != nil {
+		log.Printf("Something went wrong while parsing id: %d.\n", -1)
+		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
+		return -1
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Printf("Something went wrong while parsing id: %d.\n", -1)
 		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
 		return -1
 	}

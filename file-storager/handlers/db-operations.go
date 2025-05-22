@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -49,7 +50,7 @@ func checkFileExistance(id int) bool {
 		return false
 	}
 	defer db.Close()
-
+	log.Println("Connected to db.")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -58,6 +59,7 @@ func checkFileExistance(id int) bool {
 	if err != nil {
 		return false
 	}
+	log.Println("Found id: ", foundId)
 	return foundId == id
 }
 
@@ -67,7 +69,7 @@ func createTable(tableName string) error {
 		return err
 	}
 	defer db.Close()
-
+	log.Println("Connected to db.")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -76,11 +78,15 @@ func createTable(tableName string) error {
 	} else if tableName == analysisTableName {
 		_, err = db.ExecContext(ctx, createAnalysisTable)
 	}
-
+	log.Println("Created table: ", tableName)
 	if err != nil {
 		return err
 	}
-	doesHashesTableExist = true
+	if tableName == hashesTableName {
+		doesHashesTableExist = true
+	} else if tableName == analysisTableName {
+		doesAnalysisTableExist = true
+	}
 	return nil
 }
 
@@ -90,12 +96,13 @@ func getAnalysisResult(id int) (map[string]any, error) {
 		return nil, err
 	}
 	defer db.Close()
-
+	log.Println("Connected to db.")
 	if !doesAnalysisTableExist {
 		err := createTable(analysisTableName)
 		if err != nil {
 			return nil, err
 		}
+		doesAnalysisTableExist = true
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -117,6 +124,7 @@ func getAnalysisResult(id int) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("Got analysis result for id: ", id)
 	return result, nil
 }
 
@@ -126,12 +134,13 @@ func storeAnalysisResult(analysis Analysis) error {
 		return err
 	}
 	defer db.Close()
-
+	log.Println("Connected to db.")
 	if !doesAnalysisTableExist {
 		err := createTable(analysisTableName)
 		if err != nil {
 			return err
 		}
+		doesAnalysisTableExist = true
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -148,6 +157,6 @@ func storeAnalysisResult(analysis Analysis) error {
 	if err != nil {
 		return err
 	}
-
+	log.Println("Stored analysis result for id: ", analysis.Id)
 	return nil
 }

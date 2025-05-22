@@ -12,7 +12,7 @@ import (
 // @title File Storage Manager
 // @version 1.0
 // @description Service for managing stored files in DB.
-// @host file-storager-service:8082
+// @host localhost:8082
 // @BasePath /
 func main() {
 	router := chi.NewRouter()

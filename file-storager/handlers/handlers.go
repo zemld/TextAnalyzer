@@ -16,6 +16,7 @@ import (
 // @failure 500 {object} FileExistsResponse
 // @router /files/exists/{id} [get]
 func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
+	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return
@@ -41,6 +42,7 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	setAccessControlForOrigin(w, r)
 	id := parseIdFromRequestAndCreateResponse(w, r)
 	if id == -1 {
 		return

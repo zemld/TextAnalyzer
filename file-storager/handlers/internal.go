@@ -13,7 +13,6 @@ const (
 
 const (
 	existsPattern    = "/files/exists/{id}"
-	uploadPattern    = "/files/upload"
 	getPattern       = "/files/{id}"
 	analysisPattern  = "/files/analysis/{id}"
 	wordCloudPattern = "/files/wordcloud/{id}"
@@ -21,14 +20,24 @@ const (
 
 // TODO: имеет смысл добавить кастомный тип для id.
 
-func parseIdFromRequestAndCreateResponse(w http.ResponseWriter, r *http.Request) int {
-	idStr, err := parseParamFromUrl(r.URL.Path, existsPattern, "{id}")
+func parseIdFromRequestAndCreateResponse(w http.ResponseWriter, r *http.Request, pattern string) int {
+	idStr, err := parseParamFromUrl(r.URL.Path, pattern, "{id}")
 	if err != nil {
 		log.Printf("Something went wrong while parsing id: %d.\n", -1)
 		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
 		return -1
 	}
 	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Printf("Something went wrong while parsing id: %d.\n", -1)
+		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
+		return -1
+	}
+	return id
+}
+
+func parseIdFromFormDataAndCreateResponse(w http.ResponseWriter, r *http.Request) int {
+	id, err := strconv.Atoi(r.FormValue("id"))
 	if err != nil {
 		log.Printf("Something went wrong while parsing id: %d.\n", -1)
 		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
@@ -54,10 +63,10 @@ func writeGoodFileExistsResponse(w http.ResponseWriter, id int) {
 }
 
 func writeFileStatusResponse(w http.ResponseWriter, id int, msg string, statusCode int) {
+	w.WriteHeader(statusCode)
 	w.Header().Add("Content-Type", "application/json")
 	repsJson, _ := json.Marshal(FileStatusResponse{id, msg})
 	w.Write(repsJson)
-	w.WriteHeader(statusCode)
 }
 
 func setAccessControlForOrigin(w http.ResponseWriter, r *http.Request) {

@@ -20,7 +20,7 @@ func main() {
 	router.Get("/files/exists/{id}", handlers.CheckFileExistsHandler)
 	router.Post("/files/upload", handlers.UploadFileHandler)
 	router.Get("/files/{id}", handlers.GetFileHandler)
-	router.Post("/files/analysis/{id}", handlers.SaveAnalysisResultHandler)
+	router.Post("/files/analysis", handlers.SaveAnalysisResultHandler)
 	router.Get("/files/analysis/{id}", handlers.GetAnalysisResultHandler)
 	router.Post("/files/wordcloud/{id}", handlers.SaveWordCloudHandler)
 	router.Get("/files/wordcloud/{id}", handlers.GetWordCloudHandler)

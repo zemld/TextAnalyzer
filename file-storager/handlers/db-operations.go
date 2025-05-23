@@ -15,7 +15,7 @@ var (
 )
 
 const (
-	pgStr           = "user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
+	pgStr           = "postgres://postgres:postgres@potgres_db:5432/postgres"
 	createHashTable = "CREATE TABLE IF NOT EXISTS hashes " +
 		"(id SERIAL PRIMARY KEY, hash TEXT PRIMARY KEY)"
 	createAnalysisTable = "CREATE TABLE IF NOT EXISTS analysis" +
@@ -25,9 +25,9 @@ const (
 		"average_words_per_sentence FLOAT, average_length_of_words FLOAT)"
 	insertIntoHashTable     = "INSERT INTO hashes (hash) VALUES ($1)"
 	insertIntoAnalysisTable = "INSERT INTO analysis " +
-		"(paragraphs_amount, sentences_amount, words_amount, symbols_amount, " +
+		"(id, paragraphs_amount, sentences_amount, words_amount, symbols_amount, " +
 		"average_sentences_per_paragraph, average_words_per_sentence, average_length_of_words) " +
-		"VALUES ($1, $2, $3, $4, $5, $6, $7)"
+		"VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
 	selectForCheckThatFileExists = "SELECT id FROM hashes WHERE id = $1"
 	selectForDuplicates          = "SELECT id FROM hashes WHERE hash = $1"
 	selectFromAnalysisTable      = "SELECT * FROM analysis WHERE id = $1"
@@ -138,6 +138,7 @@ func storeAnalysisResult(analysis Analysis) error {
 	if !doesAnalysisTableExist {
 		err := createTable(analysisTableName)
 		if err != nil {
+			log.Println("Error creating analysis table: ", err)
 			return err
 		}
 		doesAnalysisTableExist = true
@@ -147,6 +148,7 @@ func storeAnalysisResult(analysis Analysis) error {
 	defer cancel()
 
 	_, err = db.ExecContext(ctx, insertIntoAnalysisTable,
+		analysis.Id,
 		analysis.ParagraphsAmount,
 		analysis.SentencesAmount,
 		analysis.WordsAmount,
@@ -155,6 +157,7 @@ func storeAnalysisResult(analysis Analysis) error {
 		analysis.AverageWordsPerSentence,
 		analysis.AverageLengthOfWords)
 	if err != nil {
+		log.Printf("Error storing analysis result for id: %d, error: %v", analysis.Id, err)
 		return err
 	}
 	log.Println("Stored analysis result for id: ", analysis.Id)

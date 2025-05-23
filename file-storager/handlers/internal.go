@@ -74,6 +74,7 @@ func setAccessControlForOrigin(w http.ResponseWriter, r *http.Request) {
 }
 
 func makeResponseFromSelectingAnalysisResult(id int, result map[string]any) Analysis {
+	log.Printf("Making response from selecting analysis result: %v\n", result)
 	return Analysis{
 		Id:                           id,
 		ParagraphsAmount:             result["paragraphs_amount"].(int),

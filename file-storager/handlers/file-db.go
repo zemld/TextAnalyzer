@@ -16,7 +16,7 @@ import (
 
 const (
 	dbName        string = "mg"
-	connectionURI string = "mongodb://root:password@localhost:27017"
+	connectionURI string = "mongodb://root:password@file_db:27017"
 )
 
 const (
@@ -37,6 +37,7 @@ func storeDocument(f []byte, id int) error {
 	db := client.Database(dbName)
 	_, err = db.Collection(filesCollection).InsertOne(ctx, bson.M{"_id": id, "file": f})
 	if err != nil {
+		log.Printf("Error while inserting document: %v", err)
 		return err
 	}
 	log.Println("Inserted document successfully.")

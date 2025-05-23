@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  handlers.AnalysisResponse:
+  handlers.Analysis:
     properties:
       average_length_of_words:
         type: number
@@ -35,7 +35,7 @@ definitions:
       status:
         type: string
     type: object
-host: file-storager-service:8083
+host: localhost:8082
 info:
   contact: {}
   description: Service for managing stored files in DB.
@@ -46,7 +46,7 @@ paths:
     get:
       description: Download file from DB.
       parameters:
-      - description: Id of file
+      - description: File ID
         in: path
         name: id
         required: true
@@ -57,9 +57,50 @@ paths:
         "200":
           description: OK
           schema:
-            type: formData
+            type: file
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+  /files/analysis:
+    post:
+      consumes:
+      - application/json
+      description: Save analysis result to DB.
+      parameters:
+      - in: formData
+        name: average_length_of_words
+        type: number
+      - in: formData
+        name: average_sentences_per_paragraph
+        type: number
+      - in: formData
+        name: average_words_per_sentence
+        type: number
+      - in: formData
+        name: id
+        type: integer
+      - in: formData
+        name: paragraphs_amount
+        type: integer
+      - in: formData
+        name: sentences_amount
+        type: integer
+      - in: formData
+        name: symbols_amount
+        type: integer
+      - in: formData
+        name: words_amount
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
           schema:
             $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
@@ -72,7 +113,7 @@ paths:
         sentences, words, symbols. Also contains average amount of sentences per paragraph,
         words per sentence, length of words.
       parameters:
-      - description: Id of file
+      - description: File ID
         in: path
         name: id
         required: true
@@ -83,30 +124,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.AnalysisResponse'
+            $ref: '#/definitions/handlers.Analysis'
         "401":
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.FileStatusResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.FileStatusResponse'
-    post:
-      consumes:
-      - application/json
-      description: Save analysis result to DB.
-      parameters:
-      - description: Id of file
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
           schema:
             $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
@@ -117,7 +137,7 @@ paths:
     get:
       description: Check if file exists in DB.
       parameters:
-      - description: Id of file
+      - description: File ID
         in: path
         name: id
         required: true
@@ -129,10 +149,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/handlers.FileExistsResponse'
-        "401":
-          description: Unauthorized
+        "400":
+          description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.FileExistsResponse'
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -146,7 +166,7 @@ paths:
         name: file
         required: true
         type: file
-      - description: Id of file
+      - description: File ID
         in: formData
         name: id
         required: true
@@ -166,7 +186,7 @@ paths:
     get:
       description: Get word cloud from DB.
       parameters:
-      - description: Id of file
+      - description: File ID
         in: path
         name: id
         required: true
@@ -191,7 +211,7 @@ paths:
       - image/png
       description: Save word cloud to DB.
       parameters:
-      - description: Id of file
+      - description: File ID
         in: path
         name: id
         required: true

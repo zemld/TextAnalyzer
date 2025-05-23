@@ -15,30 +15,60 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/files/analysis/{id}": {
-            "get": {
-                "description": "Get analysis result from DB. Result contains amount of paragraphs, sentences, words, symbols. Also contains average amount of sentences per paragraph, words per sentence, length of words.",
+        "/files/analysis": {
+            "post": {
+                "description": "Save analysis result to DB.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "parameters": [
                     {
+                        "type": "number",
+                        "name": "average_length_of_words",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "name": "average_sentences_per_paragraph",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "name": "average_words_per_sentence",
+                        "in": "formData"
+                    },
+                    {
                         "type": "integer",
-                        "description": "Id of file",
                         "name": "id",
-                        "in": "path",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "paragraphs_amount",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "sentences_amount",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "symbols_amount",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "words_amount",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.AnalysisResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
@@ -50,19 +80,18 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "Save analysis result to DB.",
-                "consumes": [
-                    "application/json"
-                ],
+            }
+        },
+        "/files/analysis/{id}": {
+            "get": {
+                "description": "Get analysis result from DB. Result contains amount of paragraphs, sentences, words, symbols. Also contains average amount of sentences per paragraph, words per sentence, length of words.",
                 "produces": [
                     "application/json"
                 ],
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -71,6 +100,12 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.Analysis"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
@@ -93,7 +128,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -106,10 +141,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/handlers.FileExistsResponse"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.FileExistsResponse"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
@@ -137,7 +172,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "formData",
                         "required": true
@@ -168,7 +203,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -206,7 +241,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -250,7 +285,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -260,7 +295,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "formData"
+                            "type": "file"
                         }
                     },
                     "401": {
@@ -280,7 +315,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handlers.AnalysisResponse": {
+        "handlers.Analysis": {
             "type": "object",
             "properties": {
                 "average_length_of_words": {
@@ -340,13 +375,15 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "file-storager-service:8083",
+	Host:             "localhost:8082",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "File Storage Manager",
 	Description:      "Service for managing stored files in DB.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {

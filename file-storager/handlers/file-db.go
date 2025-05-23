@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -60,8 +61,10 @@ func getDocument(id int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Got document successfully: %v", string(result["file"].([]byte)))
-	return result["file"].([]byte), nil
+	content, _ := result["file"].(primitive.Binary)
+	contentBytes := content.Data
+	log.Printf("Got document successfully: %v", string(contentBytes))
+	return contentBytes, nil
 }
 
 func storeWordCloud(id int, file multipart.File) error {

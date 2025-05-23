@@ -108,23 +108,25 @@ func getAnalysisResult(id int) (map[string]any, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	result := make(map[string]any)
-	result["paragraphs_amount"] = nil
-	result["sentences_amount"] = nil
-	result["words_amount"] = nil
-	result["symbols_amount"] = nil
-	result["average_sentence_per_paragraph"] = nil
-	result["average_words_per_sentence"] = nil
-	result["average_length_of_words"] = nil
+	var idFromTable, paragraphsAmount, sentencesAmount, wordsAmount, symbolsAmount int
+	var avgSentencePerParagraph, avgWordsPerSentence, avgLengthOfWords float64
 
-	err = db.QueryRowContext(ctx, selectFromAnalysisTable, id).Scan(result["paragraphs_amount"],
-		result["sentences_amount"], result["words_amount"], result["symbols_amount"],
-		result["average_sentence_per_paragraph"], result["average_words_per_sentence"],
-		result["average_length_of_words"])
+	err = db.QueryRowContext(ctx, selectFromAnalysisTable, id).Scan(
+		&idFromTable,
+		&paragraphsAmount,
+		&sentencesAmount,
+		&wordsAmount,
+		&symbolsAmount,
+		&avgSentencePerParagraph,
+		&avgWordsPerSentence,
+		&avgLengthOfWords)
 	if err != nil {
 		return nil, err
 	}
 	log.Println("Got analysis result for id: ", id)
+	result := make(map[string]any)
+
+	log.Println("Result: ", result)
 	return result, nil
 }
 

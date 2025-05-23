@@ -6,33 +6,63 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "file-storager-service:8083",
+    "host": "localhost:8082",
     "basePath": "/",
     "paths": {
-        "/files/analysis/{id}": {
-            "get": {
-                "description": "Get analysis result from DB. Result contains amount of paragraphs, sentences, words, symbols. Also contains average amount of sentences per paragraph, words per sentence, length of words.",
+        "/files/analysis": {
+            "post": {
+                "description": "Save analysis result to DB.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "parameters": [
                     {
+                        "type": "number",
+                        "name": "average_length_of_words",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "name": "average_sentences_per_paragraph",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "name": "average_words_per_sentence",
+                        "in": "formData"
+                    },
+                    {
                         "type": "integer",
-                        "description": "Id of file",
                         "name": "id",
-                        "in": "path",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "paragraphs_amount",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "sentences_amount",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "symbols_amount",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "words_amount",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.AnalysisResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
@@ -44,19 +74,18 @@
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "Save analysis result to DB.",
-                "consumes": [
-                    "application/json"
-                ],
+            }
+        },
+        "/files/analysis/{id}": {
+            "get": {
+                "description": "Get analysis result from DB. Result contains amount of paragraphs, sentences, words, symbols. Also contains average amount of sentences per paragraph, words per sentence, length of words.",
                 "produces": [
                     "application/json"
                 ],
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -65,6 +94,12 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.Analysis"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
@@ -87,7 +122,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -100,10 +135,10 @@
                             "$ref": "#/definitions/handlers.FileExistsResponse"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.FileExistsResponse"
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
@@ -131,7 +166,7 @@
                     },
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "formData",
                         "required": true
@@ -162,7 +197,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -200,7 +235,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -244,7 +279,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id of file",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -254,7 +289,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "formData"
+                            "type": "file"
                         }
                     },
                     "401": {
@@ -274,7 +309,7 @@
         }
     },
     "definitions": {
-        "handlers.AnalysisResponse": {
+        "handlers.Analysis": {
             "type": "object",
             "properties": {
                 "average_length_of_words": {

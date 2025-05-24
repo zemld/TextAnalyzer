@@ -80,14 +80,14 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 	if !checkFileExistance(w, id) {
 		return
 	}
-	if ok, err := getSavedAnalysis(w, id); !ok || err != nil {
+	if ok, err := getSavedAnalysis(w, id); ok || err != nil {
 		return
 	}
 	content, ok := getFileFromDB(w, id)
 	if !ok {
 		return
 	}
-	analyzeFile(w, id, content)
+	analyzeFileAndStoreAnalysisResultIntoDB(w, id, content)
 }
 
 // @description Getting word cloud.
@@ -98,8 +98,22 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [get]
 func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Проверяем есть ли файл в базе данных.
-	// Смотрим, есть ли уже результат облако. Если есть, то отправляем его на выход. Если нет, то перекидываем запрос на text-analyzer.
+	id := parseIdFromRequestAndCreateResponse(w, r, wordCloudPattern)
+	if id == -1 {
+		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusInternalServerError)
+		return
+	}
+	if !checkFileExistance(w, id) {
+		return
+	}
+	if ok, err := getSavedWordCloud(w, id); ok || err != nil {
+		return
+	}
+	content, ok := getFileFromDB(w, id)
+	if !ok {
+		return
+	}
+	createWordCloudAndStoreItIntoDB(w, id, content)
 }
 
 // @descriptoin Comparing files.

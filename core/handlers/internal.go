@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,8 +18,9 @@ const (
 )
 
 const (
-	getFilePattern = "/files/download/{id}"
-	analyzePattern = "/files/analyze/{id}"
+	getFilePattern   = "/files/download/{id}"
+	analyzePattern   = "/files/analyze/{id}"
+	wordCloudPattern = "/files/wordcloud/{id}"
 )
 
 func getFileContent(r *http.Request) string {
@@ -132,7 +135,7 @@ func getFileFromDB(w http.ResponseWriter, id int) ([]byte, bool) {
 	return content, true
 }
 
-func analyzeFile(w http.ResponseWriter, id int, content []byte) {
+func analyzeFileAndStoreAnalysisResultIntoDB(w http.ResponseWriter, id int, content []byte) {
 	analyzeRequest, _ := http.NewRequest("POST", "http://file-analyzer-service:8083/files/analyze", bytes.NewBuffer(content))
 	analyzeRequest.Header.Set("Content-Type", "text/plain")
 	client := http.Client{}
@@ -155,4 +158,115 @@ func analyzeFile(w http.ResponseWriter, id int, content []byte) {
 		return
 	}
 	writeAnalysisResponse(w, analysis)
+}
+
+func getSavedWordCloud(w http.ResponseWriter, id int) (bool, error) {
+	getWordCloudRequest, _ := http.NewRequest("GET", "http://file-storager-service:8082/files/wordcloud/"+strconv.Itoa(id), nil)
+	client := http.Client{}
+	wordCloudResponse, err := client.Do(getWordCloudRequest)
+	if err != nil {
+		log.Printf("Error sending request for getting word cloud: %s", err)
+		writeFileStatusResponse(w, id, "Error sending request for getting word cloud", http.StatusInternalServerError)
+		return false, err
+	}
+	if wordCloudResponse.StatusCode == http.StatusOK {
+		body := wordCloudResponse.Body
+		defer wordCloudResponse.Body.Close()
+		content, _ := io.ReadAll(body)
+		w.Header().Set("Content-Type", "image/png")
+		w.Write(content)
+		return true, nil
+	}
+	return false, nil
+}
+
+func createWordCloudAndStoreItIntoDB(w http.ResponseWriter, id int, content []byte) {
+	wordCloudBytes := createWordCloudAndWriteResponseInBadCase(w, id, content)
+	if wordCloudBytes == nil {
+		return
+	}
+	requestBody, multipartWriter, ok := createMultipartFormData(w, id, wordCloudBytes)
+	if !ok {
+		return
+	}
+	saveWordCloudRequest := createRequestForWordCloud(w, id, requestBody, multipartWriter)
+	if saveWordCloudRequest == nil {
+		return
+	}
+	if !makeRequestForStoringWordCloud(w, id, saveWordCloudRequest) {
+		return
+	}
+	w.Header().Set("Content-Type", "image/png")
+	w.WriteHeader(http.StatusOK)
+	w.Write(wordCloudBytes)
+}
+
+func createWordCloudAndWriteResponseInBadCase(w http.ResponseWriter, id int, file []byte) []byte {
+	wordCloudRequest, _ := http.NewRequest("POST", "http://file-analyzer-service:8083/files/wordcloud", bytes.NewBuffer(file))
+	client := http.Client{}
+	wordCloudResponse, err := client.Do(wordCloudRequest)
+	if err != nil {
+		writeFileStatusResponse(w, id, "Something went wrong during word cloud creation", http.StatusInternalServerError)
+		return nil
+	}
+	defer wordCloudResponse.Body.Close()
+
+	wordCloudBytes, err := io.ReadAll(wordCloudResponse.Body)
+	if err != nil {
+		writeFileStatusResponse(w, id, "Error reading word cloud image", http.StatusInternalServerError)
+		return nil
+	}
+	return wordCloudBytes
+}
+
+func createMultipartFormData(w http.ResponseWriter, id int, file []byte) (bytes.Buffer, *multipart.Writer, bool) {
+	var requestBody bytes.Buffer
+	multipartWriter := multipart.NewWriter(&requestBody)
+
+	filePart, err := multipartWriter.CreateFormFile("wordCloud", fmt.Sprintf("%d.png", id))
+	if err != nil {
+		writeFileStatusResponse(w, id, "Error creating form file", http.StatusInternalServerError)
+		return requestBody, nil, false
+	}
+
+	if _, err := filePart.Write(file); err != nil {
+		writeFileStatusResponse(w, id, "Error writing file to form", http.StatusInternalServerError)
+		return requestBody, nil, false
+	}
+
+	if err := multipartWriter.Close(); err != nil {
+		writeFileStatusResponse(w, id, "Error closing multipart writer", http.StatusInternalServerError)
+		return requestBody, nil, false
+	}
+	return requestBody, multipartWriter, true
+}
+
+func createRequestForWordCloud(w http.ResponseWriter, id int, requestBody bytes.Buffer, multipartWriter *multipart.Writer) *http.Request {
+	saveWordCloudRequest, err := http.NewRequest("POST",
+		fmt.Sprintf("http://file-storager-service:8082/files/wordcloud/%d", id),
+		&requestBody)
+	if err != nil {
+		writeFileStatusResponse(w, id, "Error creating save request", http.StatusInternalServerError)
+		return nil
+	}
+
+	saveWordCloudRequest.Header.Set("Content-Type", multipartWriter.FormDataContentType())
+	return saveWordCloudRequest
+}
+
+func makeRequestForStoringWordCloud(w http.ResponseWriter, id int, saveWordCloudRequest *http.Request) bool {
+	client := http.Client{}
+	saveResponse, err := client.Do(saveWordCloudRequest)
+	if err != nil {
+		writeFileStatusResponse(w, id, "Cannot store word cloud for file", http.StatusInternalServerError)
+		return false
+	}
+	defer saveResponse.Body.Close()
+
+	if saveResponse.StatusCode != http.StatusOK {
+		responseBody, _ := io.ReadAll(saveResponse.Body)
+		writeFileStatusResponse(w, id, fmt.Sprintf("Error storing word cloud: %s", string(responseBody)), http.StatusInternalServerError)
+		return false
+	}
+	return true
 }

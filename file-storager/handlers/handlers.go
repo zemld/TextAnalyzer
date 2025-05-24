@@ -129,7 +129,12 @@ func GetAnalysisResultHandler(w http.ResponseWriter, r *http.Request) {
 	if id == -1 {
 		return
 	}
-	mappedAnalysisResult, _ := getAnalysisResult(id)
+	mappedAnalysisResult, err := getAnalysisResult(id)
+	if err != nil {
+		writeFileStatusResponse(w, id, "There isn't analysis result saved.",
+			http.StatusInternalServerError)
+		return
+	}
 	writeAnalysisResponse(w,
 		makeResponseFromSelectingAnalysisResult(id, mappedAnalysisResult))
 }

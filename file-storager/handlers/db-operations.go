@@ -125,7 +125,14 @@ func getAnalysisResult(id int) (map[string]any, error) {
 	}
 	log.Println("Got analysis result for id: ", id)
 	result := make(map[string]any)
-
+	result["id"] = idFromTable
+	result["paragraphs_amount"] = paragraphsAmount
+	result["sentences_amount"] = sentencesAmount
+	result["words_amount"] = wordsAmount
+	result["symbols_amount"] = symbolsAmount
+	result["average_sentences_per_paragraph"] = avgSentencePerParagraph
+	result["average_words_per_sentence"] = avgWordsPerSentence
+	result["average_length_of_words"] = avgLengthOfWords
 	log.Println("Result: ", result)
 	return result, nil
 }

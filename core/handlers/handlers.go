@@ -80,14 +80,14 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 	if !checkFileExistance(w, id) {
 		return
 	}
-	if ok, err := getSavedAnalysis(w, id); ok || err != nil {
+	if ok, err := getSavedAnalysisAndWriteResponse(w, id); ok || err != nil {
 		return
 	}
 	content, ok := getFileFromDB(w, id)
 	if !ok {
 		return
 	}
-	analyzeFileAndStoreAnalysisResultIntoDB(w, id, content)
+	analyzeFileAndStoreAnalysisResultIntoDBWithResult(w, id, content)
 }
 
 // @description Getting word cloud.
@@ -121,11 +121,24 @@ func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
 // @param first-id query int true "First file ID"
 // @param second-id query int true "Second file ID"
 // @produce json
-// @success 200 {object} CompareResponse
+// @success 200 {object} Comparision
+// @failure 400 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse
 // @router /files/compare [get]
 func CompareFilesHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файлов. Проверяем есть ли файлы в базе данных.
-	// Смотрим, есть ли уже результат сравнения. Если есть, то обрабатываем его и возвращаем результат - процент плагиата с указанием что схоже.
-	// Если нет результатов анализа хотя бы одного файла, то получаем файл и отдаем его в обработку.
+	firstFileAnalysis, ok := parseIdFromQueryAndGetAnalysisResult(w, r, "first-id")
+	if !ok {
+		return
+	}
+	secondFileAnalysis, ok := parseIdFromQueryAndGetAnalysisResult(w, r, "second-id")
+	if !ok {
+		return
+	}
+	log.Printf("Comparing files with ids: %d and %d", firstFileAnalysis.Id, secondFileAnalysis.Id)
+	log.Printf("firstFileAnalysis: %v", firstFileAnalysis)
+	log.Printf("secondFileAnalysis: %v", secondFileAnalysis)
+	comparision := compareFiles(firstFileAnalysis, secondFileAnalysis)
+	w.Header().Set("Content-Type", "application/json")
+	encodedResult, _ := json.Marshal(comparision)
+	w.Write(encodedResult)
 }

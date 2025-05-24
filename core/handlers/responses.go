@@ -22,7 +22,8 @@ type Analysis struct {
 	AverageLengthOfWords         float64 `json:"average_length_of_words"`
 }
 
-type CompareResponse struct {
-	FirstId  int `json:"first_id"`
-	SecondId int `json:"second_id"`
+type Comparision struct {
+	FirstId            int     `json:"first_id"`
+	SecondId           int     `json:"second_id"`
+	MatchingPercentage float64 `json:"matching_percentage`
 }

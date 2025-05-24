@@ -23,6 +23,11 @@ const (
 	wordCloudPattern = "/files/wordcloud/{id}"
 )
 
+const (
+	maxComparisonDiff float64 = 0.1
+	totalValues       int     = 7
+)
+
 func getFileContent(r *http.Request) string {
 	file := r.Body
 	defer r.Body.Close()
@@ -34,7 +39,7 @@ func getFileContent(r *http.Request) string {
 
 func writeFileStatusResponse(w http.ResponseWriter, id int, msg string, statusCode int) {
 	w.WriteHeader(statusCode)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	repsJson, _ := json.Marshal(FileStatusResponse{id, msg})
 	w.Write(repsJson)
 }
@@ -71,7 +76,7 @@ func parseParamFromUrl(url string, pattern string, param string) (string, error)
 }
 
 func writeAnalysisResponse(w http.ResponseWriter, analysis Analysis) {
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	encodedAnalysis, _ := json.Marshal(analysis)
 	w.Write(encodedAnalysis)
 	w.WriteHeader(http.StatusOK)
@@ -97,23 +102,32 @@ func checkFileExistance(w http.ResponseWriter, id int) bool {
 	return true
 }
 
-func getSavedAnalysis(w http.ResponseWriter, id int) (bool, error) {
+func getSavedAnalysisAndWriteResponse(w http.ResponseWriter, id int) (bool, error) {
+	analysisContent, err := getSavedAnalysis(w, id)
+	if err != nil {
+		return false, err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(analysisContent)
+	return true, nil
+}
+
+func getSavedAnalysis(w http.ResponseWriter, id int) ([]byte, error) {
 	getAnalysisRequest, _ := http.NewRequest("GET", "http://file-storager-service:8082/files/analysis/"+strconv.Itoa(id), nil)
 	client := http.Client{}
 	analysisResponse, err := client.Do(getAnalysisRequest)
 	if err != nil {
 		log.Printf("Error sending request for getting analysis: %s", err)
 		writeFileStatusResponse(w, id, "Error sending request for getting analysis", http.StatusInternalServerError)
-		return false, err
+		return nil, err
 	}
 	if analysisResponse.StatusCode == http.StatusOK {
 		body := analysisResponse.Body
 		defer analysisResponse.Body.Close()
 		content, _ := io.ReadAll(body)
-		w.Write(content)
-		return true, nil
+		return content, nil
 	}
-	return false, nil
+	return nil, nil
 }
 
 func getFileFromDB(w http.ResponseWriter, id int) ([]byte, bool) {
@@ -135,14 +149,22 @@ func getFileFromDB(w http.ResponseWriter, id int) ([]byte, bool) {
 	return content, true
 }
 
-func analyzeFileAndStoreAnalysisResultIntoDB(w http.ResponseWriter, id int, content []byte) {
+func analyzeFileAndStoreAnalysisResultIntoDBWithResult(w http.ResponseWriter, id int, content []byte) {
+	analysis, ok := analyzeFileAndStoreAnalysisResultIntoDBAndGetResult(w, id, content)
+	if !ok {
+		return
+	}
+	writeAnalysisResponse(w, analysis)
+}
+
+func analyzeFileAndStoreAnalysisResultIntoDBAndGetResult(w http.ResponseWriter, id int, content []byte) (Analysis, bool) {
 	analyzeRequest, _ := http.NewRequest("POST", "http://file-analyzer-service:8083/files/analyze", bytes.NewBuffer(content))
 	analyzeRequest.Header.Set("Content-Type", "text/plain")
 	client := http.Client{}
 	analyzeResponse, err := client.Do(analyzeRequest)
 	if err != nil {
 		writeFileStatusResponse(w, id, "Something went wrong during analysis", http.StatusInternalServerError)
-		return
+		return Analysis{}, false
 	}
 	var analysis Analysis
 	body := analyzeResponse.Body
@@ -155,9 +177,9 @@ func analyzeFileAndStoreAnalysisResultIntoDB(w http.ResponseWriter, id int, cont
 	_, err = client.Do(saveAnalysisResult)
 	if err != nil {
 		writeFileStatusResponse(w, id, "Cannot store analysis result for file", http.StatusInternalServerError)
-		return
+		return Analysis{}, false
 	}
-	writeAnalysisResponse(w, analysis)
+	return analysis, true
 }
 
 func getSavedWordCloud(w http.ResponseWriter, id int) (bool, error) {
@@ -269,4 +291,70 @@ func makeRequestForStoringWordCloud(w http.ResponseWriter, id int, saveWordCloud
 		return false
 	}
 	return true
+}
+
+func parseIdFromQueryAndGetAnalysisResult(w http.ResponseWriter, r *http.Request, paramName string) (Analysis, bool) {
+	id, err := strconv.Atoi((r.URL.Query().Get(paramName)))
+	if err != nil {
+		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
+		return Analysis{}, false
+	}
+	analysis, ok := getAnalysisResult(w, id)
+	if !ok {
+		return Analysis{}, false
+	}
+	return analysis, true
+}
+
+func getAnalysisResult(w http.ResponseWriter, id int) (Analysis, bool) {
+	if !checkFileExistance(w, id) {
+		return Analysis{}, false
+	}
+	if content, err := getSavedAnalysis(w, id); content == nil || err != nil {
+		writeFileStatusResponse(w, id, fmt.Sprintf("Error getting analysis result: %v", err), http.StatusInternalServerError)
+		return Analysis{}, false
+	}
+	content, ok := getFileFromDB(w, id)
+	if !ok {
+		return Analysis{}, false
+	}
+	analysis, ok := analyzeFileAndStoreAnalysisResultIntoDBAndGetResult(w, id, content)
+	if !ok {
+		return Analysis{}, false
+	}
+	return analysis, true
+}
+
+func compareFiles(first Analysis, second Analysis) Comparision {
+	similarValues := 0
+	if doesValuesSimilar(float64(first.ParagraphsAmount), float64(second.ParagraphsAmount)) {
+		similarValues++
+	}
+	if doesValuesSimilar(float64(first.SentencesAmount), float64(second.SentencesAmount)) {
+		similarValues++
+	}
+	if doesValuesSimilar(float64(first.WordsAmount), float64(second.WordsAmount)) {
+		similarValues++
+	}
+	if doesValuesSimilar(float64(first.SymbolsAmount), float64(second.SymbolsAmount)) {
+		similarValues++
+	}
+	if doesValuesSimilar(first.AverageSentencesPerParagraph, second.AverageSentencesPerParagraph) {
+		similarValues++
+	}
+	if doesValuesSimilar(first.AverageWordsPerSentence, second.AverageWordsPerSentence) {
+		similarValues++
+	}
+	if doesValuesSimilar(first.AverageLengthOfWords, second.AverageLengthOfWords) {
+		similarValues++
+	}
+	comparision := Comparision{FirstId: first.Id, SecondId: second.Id}
+	comparisonResult := float64(similarValues) / float64(totalValues) * 100
+	comparision.MatchingPercentage = comparisonResult
+	return comparision
+}
+
+func doesValuesSimilar(first float64, second float64) bool {
+	diff := (first - second) / second
+	return diff <= maxComparisonDiff
 }

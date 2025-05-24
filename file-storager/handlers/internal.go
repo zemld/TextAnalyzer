@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -36,14 +39,17 @@ func parseIdFromRequestAndCreateResponse(w http.ResponseWriter, r *http.Request,
 	return id
 }
 
-func parseIdFromFormDataAndCreateResponse(w http.ResponseWriter, r *http.Request) int {
-	id, err := strconv.Atoi(r.FormValue("id"))
+func parseSaveFileRequestAndCreateResponse(w http.ResponseWriter, r *http.Request) (string, bool) {
+	body := r.Body
+	defer body.Close()
+
+	textBytes, err := io.ReadAll(body)
 	if err != nil {
-		log.Printf("Something went wrong while parsing id: %d.\n", -1)
-		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
-		return -1
+		writeFileStatusResponse(w, -1, "Cannot read file.", http.StatusInternalServerError)
+		return "", false
 	}
-	return id
+	text := string(textBytes)
+	return text, true
 }
 
 func writeFileExistsResponse(w http.ResponseWriter, resp FileExistsResponse) {
@@ -92,4 +98,9 @@ func writeAnalysisResponse(w http.ResponseWriter, analysis Analysis) {
 	encodedAnalysis, _ := json.Marshal(analysis)
 	w.Write(encodedAnalysis)
 	w.WriteHeader(http.StatusOK)
+}
+
+func getHash(text string) string {
+	hash := sha256.Sum256([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

@@ -26,44 +26,13 @@ const docTemplate = `{
                 ],
                 "parameters": [
                     {
-                        "type": "number",
-                        "name": "average_length_of_words",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "number",
-                        "name": "average_sentences_per_paragraph",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "number",
-                        "name": "average_words_per_sentence",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "paragraphs_amount",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "sentences_amount",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "symbols_amount",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "words_amount",
-                        "in": "formData"
+                        "description": "Result of file analysis",
+                        "name": "analysis",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.Analysis"
+                        }
                     }
                 ],
                 "responses": {
@@ -164,18 +133,13 @@ const docTemplate = `{
                 ],
                 "parameters": [
                     {
-                        "type": "file",
                         "description": "File to upload",
                         "name": "file",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "File ID",
-                        "name": "id",
-                        "in": "formData",
-                        "required": true
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 )
@@ -34,8 +33,7 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 
 // @description Upload file to DB.
 // @tag.name File operations
-// @param file formData file true "File to upload"
-// @param id formData int true "File ID"
+// @param file body string true "File to upload"
 // @produce json
 // @success 200 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse
@@ -43,22 +41,20 @@ func CheckFileExistsHandler(w http.ResponseWriter, r *http.Request) {
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	setAccessControlForOrigin(w, r)
-	id := parseIdFromFormDataAndCreateResponse(w, r)
-	if id == -1 {
+	text, ok := parseSaveFileRequestAndCreateResponse(w, r)
+	if !ok {
 		return
 	}
-
-	r.ParseMultipartForm(10 << 20)
-	file, _, err := r.FormFile("file")
-	if err != nil {
-		writeFileStatusResponse(w, id, "Cannot parse file.",
+	log.Print(text)
+	hash := getHash(text)
+	id := storeHash(hash)
+	if id == -1 {
+		writeFileStatusResponse(w, -1, "Cannot store file.",
 			http.StatusInternalServerError)
 		return
 	}
-	defer file.Close()
-
-	buf, _ := io.ReadAll(file)
-	if err = storeDocument(buf, id); err != nil {
+	buf := []byte(text)
+	if err := storeDocument(buf, id); err != nil {
 		writeFileStatusResponse(w, id, "Cannot store file.",
 			http.StatusInternalServerError)
 		return
@@ -95,7 +91,7 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 // @description Save analysis result to DB.
 // @tag.name File operations
 // @accept json
-// @param analysis formData Analysis true "Result of file analysis"
+// @param analysis body Analysis true "Result of file analysis"
 // @produce json
 // @success 200 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse

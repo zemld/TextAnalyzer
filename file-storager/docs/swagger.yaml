@@ -72,30 +72,12 @@ paths:
       - application/json
       description: Save analysis result to DB.
       parameters:
-      - in: formData
-        name: average_length_of_words
-        type: number
-      - in: formData
-        name: average_sentences_per_paragraph
-        type: number
-      - in: formData
-        name: average_words_per_sentence
-        type: number
-      - in: formData
-        name: id
-        type: integer
-      - in: formData
-        name: paragraphs_amount
-        type: integer
-      - in: formData
-        name: sentences_amount
-        type: integer
-      - in: formData
-        name: symbols_amount
-        type: integer
-      - in: formData
-        name: words_amount
-        type: integer
+      - description: Result of file analysis
+        in: body
+        name: analysis
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.Analysis'
       produces:
       - application/json
       responses:
@@ -162,15 +144,11 @@ paths:
       description: Upload file to DB.
       parameters:
       - description: File to upload
-        in: formData
+        in: body
         name: file
         required: true
-        type: file
-      - description: File ID
-        in: formData
-        name: id
-        required: true
-        type: integer
+        schema:
+          type: string
       produces:
       - application/json
       responses:

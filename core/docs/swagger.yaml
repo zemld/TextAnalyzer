@@ -1,0 +1,152 @@
+basePath: /
+definitions:
+  handlers.Analysis:
+    properties:
+      average_length_of_words:
+        type: number
+      average_sentences_per_paragraph:
+        type: number
+      average_words_per_sentence:
+        type: number
+      id:
+        type: integer
+      paragraphs_amount:
+        type: integer
+      sentences_amount:
+        type: integer
+      symbols_amount:
+        type: integer
+      words_amount:
+        type: integer
+    type: object
+  handlers.CompareResponse:
+    properties:
+      first_id:
+        type: integer
+      second_id:
+        type: integer
+    type: object
+  handlers.FileStatusResponse:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: Core service with bussiness logic.
+  title: Core Service
+  version: "1.0"
+paths:
+  /files/analyze/{id}:
+    get:
+      description: Analyzing file.
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Analysis'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+  /files/compare:
+    get:
+      parameters:
+      - description: First file ID
+        in: query
+        name: first-id
+        required: true
+        type: integer
+      - description: Second file ID
+        in: query
+        name: second-id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CompareResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+  /files/download/{id}:
+    get:
+      description: Downloading file.
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+  /files/upload:
+    post:
+      description: Uploading file.
+      parameters:
+      - description: File to upload
+        in: body
+        name: file
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+  /files/wordcloud/{id}:
+    get:
+      description: Getting word cloud.
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
+swagger: "2.0"

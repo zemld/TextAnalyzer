@@ -17,7 +17,7 @@ var (
 const (
 	pgStr           = "postgres://postgres:postgres@potgres_db:5432/postgres"
 	createHashTable = "CREATE TABLE IF NOT EXISTS hashes " +
-		"(id SERIAL PRIMARY KEY, hash TEXT PRIMARY KEY)"
+		"(id SERIAL PRIMARY KEY, hash TEXT)"
 	createAnalysisTable = "CREATE TABLE IF NOT EXISTS analysis" +
 		"(id INTEGER PRIMARY KEY, paragraphs_amount INTEGER, " +
 		"sentences_amount INTEGER, words_amount INTEGER, " +
@@ -164,4 +164,39 @@ func storeAnalysisResult(analysis Analysis) error {
 	}
 	log.Println("Stored analysis result for id: ", analysis.Id)
 	return nil
+}
+
+func storeHash(hash string) int {
+	db, err := sql.Open("pgx", pgStr)
+	if err != nil {
+		log.Println("Error connecting to db: ", err)
+		return -1
+	}
+	defer db.Close()
+	log.Println("Connected to db.")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if !doesHashesTableExist {
+		err := createTable(hashesTableName)
+		if err != nil {
+			log.Println("Error creating hashes table: ", err)
+			return -1
+		}
+		doesHashesTableExist = true
+	}
+
+	_, err = db.ExecContext(ctx, insertIntoHashTable, hash)
+	if err != nil {
+		log.Printf("Error storing hash, error: %v", err)
+		return -1
+	}
+	var id int
+	err = db.QueryRowContext(ctx, selectForDuplicates, hash).Scan(&id)
+	if err != nil {
+		log.Printf("Error getting id, error: %v", err)
+		return -1
+	}
+	return id
 }

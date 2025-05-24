@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -36,16 +39,17 @@ func parseIdFromRequestAndCreateResponse(w http.ResponseWriter, r *http.Request,
 	return id
 }
 
-func parseSaveFileRequestAndCreateResponse(w http.ResponseWriter, r *http.Request) (SaveFileRequest, bool) {
+func parseSaveFileRequestAndCreateResponse(w http.ResponseWriter, r *http.Request) (string, bool) {
 	body := r.Body
 	defer body.Close()
-	var req SaveFileRequest
-	if err := json.NewDecoder(body).Decode(&req); err != nil {
-		writeFileStatusResponse(w, -1, "Cannot parse request.",
-			http.StatusBadRequest)
-		return SaveFileRequest{}, false
+
+	textBytes, err := io.ReadAll(body)
+	if err != nil {
+		writeFileStatusResponse(w, -1, "Cannot read file.", http.StatusInternalServerError)
+		return "", false
 	}
-	return req, true
+	text := string(textBytes)
+	return text, true
 }
 
 func writeFileExistsResponse(w http.ResponseWriter, resp FileExistsResponse) {
@@ -94,4 +98,9 @@ func writeAnalysisResponse(w http.ResponseWriter, analysis Analysis) {
 	encodedAnalysis, _ := json.Marshal(analysis)
 	w.Write(encodedAnalysis)
 	w.WriteHeader(http.StatusOK)
+}
+
+func getHash(text string) string {
+	hash := sha256.Sum256([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

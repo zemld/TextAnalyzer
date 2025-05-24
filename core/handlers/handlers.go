@@ -3,8 +3,10 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // @description Uploading file.
@@ -40,7 +42,24 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/download/{id} [get]
 func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Проверяем есть ли файл в базе данных и перекидываем запрос на file-storager.
+	id := parseIdFromRequestAndCreateResponse(w, r, getFilePattern)
+	if id == -1 {
+		return
+	}
+
+	log.Printf("Sending request for downloading file with id: %d", id)
+	request, _ := http.NewRequest("GET", "http://file-storager-service:8082/files/"+strconv.Itoa(id), nil)
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Printf("Error sending request for downloading file: %s", err)
+		writeFileStatusResponse(w, -1, "Error sending request for downloading file", http.StatusInternalServerError)
+		return
+	}
+	file := response.Body
+	defer response.Body.Close()
+	content, _ := io.ReadAll(file)
+	w.Write(content)
 }
 
 // @description Analyzing file.

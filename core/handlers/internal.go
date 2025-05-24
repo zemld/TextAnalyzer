@@ -1,31 +1,24 @@
 package handlers
 
 import (
-	"crypto/sha256"
+	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 )
 
-func getHashOfFileFromRequest(w http.ResponseWriter, r *http.Request) (string, error) {
-	r.ParseMultipartForm(10 << 20)
+func getFileContent(r *http.Request) string {
+	file := r.Body
+	defer r.Body.Close()
 
-	file, _, err := r.FormFile("file")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return "", err
-	}
-
-	content, err := io.ReadAll(file)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return "", err
-	}
-	hash := getHash(content)
-	return hash, nil
+	content, _ := io.ReadAll(file)
+	log.Printf("File content: %s", content)
+	return string(content)
 }
 
-func getHash(fileContent []byte) string {
-	hash := sha256.New()
-	hash.Write(fileContent)
-	return string(hash.Sum(nil))
+func writeFileStatusResponse(w http.ResponseWriter, id int, msg string, statusCode int) {
+	w.WriteHeader(statusCode)
+	w.Header().Add("Content-Type", "application/json")
+	repsJson, _ := json.Marshal(FileStatusResponse{id, msg})
+	w.Write(repsJson)
 }

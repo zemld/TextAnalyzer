@@ -59,6 +59,7 @@ func getDocument(id int) ([]byte, error) {
 	var result bson.M
 	err = db.Collection(filesCollection).FindOne(ctx, bson.M{"_id": id}).Decode(&result)
 	if err != nil {
+		log.Printf("Error while getting document: %v", err)
 		return nil, err
 	}
 	content, _ := result["file"].(primitive.Binary)

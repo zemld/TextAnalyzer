@@ -1,10 +1,15 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+)
+
+const (
+	wordCloudUrl string = "https://quickchart.io/wordcloud"
 )
 
 // @description Analyze file.
@@ -12,18 +17,14 @@ import (
 // @param text body string true "Text to analyze."
 // @produce json
 // @success 200 {object} Analysis
-// @failure 500 {object} FileStatusResponse
+// @failure 500 {string} string
 // @router /files/analyze [post]
 func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
-	body := r.Body
-	defer body.Close()
-	textBytes, err := io.ReadAll(body)
-	if err != nil {
-		log.Println(err)
-		writeFileStatusResponse(w, -1, "Cannot read file.", http.StatusInternalServerError)
+	text, ok := parseTextFromRequest(r)
+	if !ok {
+		writeResponse(w, "Cannot read file.", http.StatusInternalServerError)
 		return
 	}
-	text := string(textBytes)
 	log.Println(text)
 	analysis := Analysis{}
 	analysis.Id = -1
@@ -48,12 +49,32 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 
 // @description Get word cloud.
 // @tag.name File operations
-// @param text formData string true "Text to analyze."
+// @param text body string true "Text to analyze."
 // @produce png
 // @success 200 {file} blob
-// @failure 400 {object} FileStatusResponse
-// @failure 500 {object} FileStatusResponse
+// @failure 500 {string} string
 // @router /files/wordcloud [post]
 func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
+	text, ok := parseTextFromRequest(r)
+	if !ok {
+		writeResponse(w, "Cannot read file.", http.StatusInternalServerError)
+		return
+	}
+	log.Println(text)
+	body := createRequestForWordCloud(text)
+	resp, err := http.Post(wordCloudUrl, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		writeResponse(w, "Cannot get word cloud.", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		writeResponse(w, "Cannot get word cloud.", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Disposition", "inline; filename=\"wordcloud.png\"")
+	io.Copy(w, resp.Body)
 }

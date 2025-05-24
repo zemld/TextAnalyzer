@@ -138,7 +138,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.SaveFileRequest"
+                            "type": "string"
                         }
                     }
                 ],
@@ -329,17 +329,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "handlers.SaveFileRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "text": {
                     "type": "string"
                 }
             }

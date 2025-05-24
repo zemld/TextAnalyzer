@@ -35,13 +35,6 @@ definitions:
       status:
         type: string
     type: object
-  handlers.SaveFileRequest:
-    properties:
-      id:
-        type: integer
-      text:
-        type: string
-    type: object
 host: localhost:8082
 info:
   contact: {}
@@ -155,7 +148,7 @@ paths:
         name: file
         required: true
         schema:
-          $ref: '#/definitions/handlers.SaveFileRequest'
+          type: string
       produces:
       - application/json
       responses:

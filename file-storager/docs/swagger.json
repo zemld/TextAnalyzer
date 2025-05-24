@@ -132,7 +132,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.SaveFileRequest"
+                            "type": "string"
                         }
                     }
                 ],
@@ -323,17 +323,6 @@
                     "type": "integer"
                 },
                 "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "handlers.SaveFileRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "text": {
                     "type": "string"
                 }
             }

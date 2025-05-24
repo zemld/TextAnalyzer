@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"net/http"
 	"strings"
 )
 
@@ -32,4 +34,11 @@ func countSentences(text string) int {
 
 func countParagraphs(text string) int {
 	return len(strings.Split(text, "\n"))
+}
+
+func writeFileStatusResponse(w http.ResponseWriter, id int, msg string, statusCode int) {
+	w.WriteHeader(statusCode)
+	w.Header().Add("Content-Type", "application/json")
+	repsJson, _ := json.Marshal(FileStatusResponse{id, msg})
+	w.Write(repsJson)
 }

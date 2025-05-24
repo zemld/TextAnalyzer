@@ -12,7 +12,6 @@ import (
 // @param text body string true "Text to analyze."
 // @produce json
 // @success 200 {object} Analysis
-// @failure 400 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse
 // @router /files/analyze [post]
 func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +20,7 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 	textBytes, err := io.ReadAll(body)
 	if err != nil {
 		log.Println(err)
+		writeFileStatusResponse(w, -1, "Cannot read file.", http.StatusInternalServerError)
 		return
 	}
 	text := string(textBytes)

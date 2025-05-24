@@ -25,5 +25,5 @@ type Analysis struct {
 type Comparision struct {
 	FirstId            int     `json:"first_id"`
 	SecondId           int     `json:"second_id"`
-	MatchingPercentage float64 `json:"matching_percentage`
+	MatchingPercentage float64 `json:"matching_percentage"`
 }

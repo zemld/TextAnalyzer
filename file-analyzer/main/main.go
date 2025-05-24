@@ -15,8 +15,8 @@ import (
 // @BasePath /
 func main() {
 	router := chi.NewRouter()
-	router.Get("/files/analyze", handlers.AnalyzeFileHandler)
-	router.Get("/files/wordcloud", handlers.WordCloudHandler)
+	router.Post("/files/analyze", handlers.AnalyzeFileHandler)
+	router.Post("/files/wordcloud", handlers.WordCloudHandler)
 
 	fs := http.FileServer(http.Dir("./docs"))
 	router.Handle("/docs/*", http.StripPrefix("/docs/", fs))

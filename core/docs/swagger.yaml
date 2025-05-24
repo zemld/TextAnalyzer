@@ -19,10 +19,12 @@ definitions:
       words_amount:
         type: integer
     type: object
-  handlers.CompareResponse:
+  handlers.Comparision:
     properties:
       first_id:
         type: integer
+      matching_percentage:
+        type: number
       second_id:
         type: integer
     type: object
@@ -83,7 +85,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.CompareResponse'
+            $ref: '#/definitions/handlers.Comparision'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.FileStatusResponse'
         "500":
           description: Internal Server Error
           schema:

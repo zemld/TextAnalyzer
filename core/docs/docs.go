@@ -77,7 +77,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.CompareResponse"
+                            "$ref": "#/definitions/handlers.Comparision"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.FileStatusResponse"
                         }
                     },
                     "500": {
@@ -215,11 +221,14 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.CompareResponse": {
+        "handlers.Comparision": {
             "type": "object",
             "properties": {
                 "first_id": {
                     "type": "integer"
+                },
+                "matching_percentage": {
+                    "type": "number"
                 },
                 "second_id": {
                     "type": "integer"

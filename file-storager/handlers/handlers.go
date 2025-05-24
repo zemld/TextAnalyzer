@@ -67,7 +67,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @param id path int true "File ID"
 // @produce plain
 // @success 200 {file} blob
-// @success 401 {object} FileStatusResponse
+// @success 400 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse
 // @router /files/{id} [get]
 func GetFileHandler(w http.ResponseWriter, r *http.Request) {

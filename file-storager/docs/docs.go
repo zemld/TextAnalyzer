@@ -262,8 +262,8 @@ const docTemplate = `{
                             "type": "file"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/handlers.FileStatusResponse"
                         }

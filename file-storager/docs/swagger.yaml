@@ -58,8 +58,8 @@ paths:
           description: OK
           schema:
             type: file
-        "401":
-          description: Unauthorized
+        "400":
+          description: Bad Request
           schema:
             $ref: '#/definitions/handlers.FileStatusResponse'
         "500":

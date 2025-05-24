@@ -1,0 +1,71 @@
+basePath: /
+definitions:
+  handlers.Analysis:
+    properties:
+      average_length_of_words:
+        type: number
+      average_sentences_per_paragraph:
+        type: number
+      average_words_per_sentence:
+        type: number
+      id:
+        type: integer
+      paragraphs_amount:
+        type: integer
+      sentences_amount:
+        type: integer
+      symbols_amount:
+        type: integer
+      words_amount:
+        type: integer
+    type: object
+host: localhost:8083
+info:
+  contact: {}
+  description: Service for analyzing files.
+  title: File Analyzer
+  version: "1.0"
+paths:
+  /files/analyze:
+    post:
+      description: Analyze file.
+      parameters:
+      - description: Text to analyze.
+        in: body
+        name: text
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Analysis'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+  /files/wordcloud:
+    post:
+      description: Get word cloud.
+      parameters:
+      - description: Text to analyze.
+        in: body
+        name: text
+        required: true
+        schema:
+          type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+swagger: "2.0"

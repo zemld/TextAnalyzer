@@ -1,0 +1,110 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Service for analyzing files.",
+        "title": "File Analyzer",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8083",
+    "basePath": "/",
+    "paths": {
+        "/files/analyze": {
+            "post": {
+                "description": "Analyze file.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "description": "Text to analyze.",
+                        "name": "text",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.Analysis"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/wordcloud": {
+            "post": {
+                "description": "Get word cloud.",
+                "produces": [
+                    "image/png"
+                ],
+                "parameters": [
+                    {
+                        "description": "Text to analyze.",
+                        "name": "text",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.Analysis": {
+            "type": "object",
+            "properties": {
+                "average_length_of_words": {
+                    "type": "number"
+                },
+                "average_sentences_per_paragraph": {
+                    "type": "number"
+                },
+                "average_words_per_sentence": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "paragraphs_amount": {
+                    "type": "integer"
+                },
+                "sentences_amount": {
+                    "type": "integer"
+                },
+                "symbols_amount": {
+                    "type": "integer"
+                },
+                "words_amount": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

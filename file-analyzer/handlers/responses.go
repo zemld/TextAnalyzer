@@ -1,16 +1,5 @@
 package handlers
 
-type FileExistsResponse struct {
-	Exists bool   `json:"exists"`
-	Id     int    `json:"id"`
-	Status string `json:"status"`
-}
-
-type FileStatusResponse struct {
-	Id     int    `json:"id"`
-	Status string `json:"status"`
-}
-
 type Analysis struct {
 	Id                           int     `json:"id"`
 	ParagraphsAmount             int     `json:"paragraphs_amount"`

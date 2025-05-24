@@ -36,14 +36,16 @@ func parseIdFromRequestAndCreateResponse(w http.ResponseWriter, r *http.Request,
 	return id
 }
 
-func parseIdFromFormDataAndCreateResponse(w http.ResponseWriter, r *http.Request) int {
-	id, err := strconv.Atoi(r.FormValue("id"))
-	if err != nil {
-		log.Printf("Something went wrong while parsing id: %d.\n", -1)
-		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusBadRequest)
-		return -1
+func parseSaveFileRequestAndCreateResponse(w http.ResponseWriter, r *http.Request) (SaveFileRequest, bool) {
+	body := r.Body
+	defer body.Close()
+	var req SaveFileRequest
+	if err := json.NewDecoder(body).Decode(&req); err != nil {
+		writeFileStatusResponse(w, -1, "Cannot parse request.",
+			http.StatusBadRequest)
+		return SaveFileRequest{}, false
 	}
-	return id
+	return req, true
 }
 
 func writeFileExistsResponse(w http.ResponseWriter, resp FileExistsResponse) {

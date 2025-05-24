@@ -44,6 +44,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 	id := parseIdFromRequestAndCreateResponse(w, r, getFilePattern)
 	if id == -1 {
+		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusInternalServerError)
 		return
 	}
 
@@ -67,11 +68,26 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @param id path int true "File ID"
 // @produce json
 // @success 200 {object} Analysis
+// @failure 400 {object} FileStatusResponse
 // @failure 500 {object} FileStatusResponse
 // @router /files/analyze/{id} [get]
 func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Проверяем есть ли файл в базе данных.
-	// Смотрим, есть ли уже результат анализа. Если есть, то отправляем его на выход. Если нет, то перекидываем запрос на file-analyzer.
+	id := parseIdFromRequestAndCreateResponse(w, r, analyzePattern)
+	if id == -1 {
+		writeFileStatusResponse(w, -1, incorrectIdMsg, http.StatusInternalServerError)
+		return
+	}
+	if !checkFileExistance(w, id) {
+		return
+	}
+	if ok, err := getSavedAnalysis(w, id); !ok || err != nil {
+		return
+	}
+	content, ok := getFileFromDB(w, id)
+	if !ok {
+		return
+	}
+	analyzeFile(w, id, content)
 }
 
 // @description Getting word cloud.

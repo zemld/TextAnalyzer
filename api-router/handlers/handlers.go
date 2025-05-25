@@ -93,7 +93,8 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 // @produce png
 // @produce json
 // @success 200 {png} blob
-// @failure 500 {object} models.FileStatusResponse
+// @failure 400 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [get]
 func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	response, err := tryParseParamFromUrlAndSendRequest(w, r, downloadFilePattern, "{id}")

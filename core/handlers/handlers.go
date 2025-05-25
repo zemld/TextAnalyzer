@@ -80,7 +80,7 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 	if !checkFileExistance(w, id) {
 		return
 	}
-	if ok, err := getSavedAnalysisAndWriteResponse(w, id); ok || err != nil {
+	if err := getSavedAnalysisAndWriteResponse(w, id); err != nil {
 		return
 	}
 	content, ok := getFileFromDB(w, id)

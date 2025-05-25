@@ -102,14 +102,14 @@ func checkFileExistance(w http.ResponseWriter, id int) bool {
 	return true
 }
 
-func getSavedAnalysisAndWriteResponse(w http.ResponseWriter, id int) (bool, error) {
+func getSavedAnalysisAndWriteResponse(w http.ResponseWriter, id int) error {
 	analysisContent, err := getSavedAnalysis(w, id)
 	if err != nil {
-		return false, err
+		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(analysisContent)
-	return true, nil
+	return nil
 }
 
 func getSavedAnalysis(w http.ResponseWriter, id int) ([]byte, error) {
@@ -121,9 +121,9 @@ func getSavedAnalysis(w http.ResponseWriter, id int) ([]byte, error) {
 		writeFileStatusResponse(w, id, "Error sending request for getting analysis", http.StatusInternalServerError)
 		return nil, err
 	}
+	defer analysisResponse.Body.Close()
 	if analysisResponse.StatusCode == http.StatusOK {
 		body := analysisResponse.Body
-		defer analysisResponse.Body.Close()
 		content, _ := io.ReadAll(body)
 		return content, nil
 	}
@@ -310,9 +310,15 @@ func getAnalysisResult(w http.ResponseWriter, id int) (Analysis, bool) {
 	if !checkFileExistance(w, id) {
 		return Analysis{}, false
 	}
-	if content, err := getSavedAnalysis(w, id); content == nil || err != nil {
+	content, err := getSavedAnalysis(w, id)
+	if err != nil {
 		writeFileStatusResponse(w, id, fmt.Sprintf("Error getting analysis result: %v", err), http.StatusInternalServerError)
 		return Analysis{}, false
+	}
+	if content != nil {
+		var analysis Analysis
+		json.Unmarshal(content, &analysis)
+		return analysis, true
 	}
 	content, ok := getFileFromDB(w, id)
 	if !ok {

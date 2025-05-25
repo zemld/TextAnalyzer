@@ -29,7 +29,6 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	contentToSend := bytes.NewBuffer(fileContent)
 	request, _ := http.NewRequest("POST", "http://core-service:8081/files/upload", contentToSend)
-
 	client := http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
@@ -74,7 +73,7 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/analyze/{id} [get]
 func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
-	response, err := tryParseParamFromUrlAndSendRequest(w, r, downloadFilePattern, "{id}")
+	response, err := tryParseParamFromUrlAndSendRequest(w, r, analyzeFilePattern, "{id}")
 	if err != nil {
 		return
 	}
@@ -84,6 +83,7 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 	var analysis Analysis
 	if err = json.Unmarshal(responseBody, &analysis); err != nil {
 		writeFileStatusResponse(w, -1, "Cannot get result.", status)
+		return
 	}
 	writeAnalysisResponse(w, analysis)
 }
@@ -98,7 +98,7 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/wordcloud/{id} [get]
 func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	response, err := tryParseParamFromUrlAndSendRequest(w, r, downloadFilePattern, "{id}")
+	response, err := tryParseParamFromUrlAndSendRequest(w, r, wordCloudPattern, "{id}")
 	if err != nil {
 		return
 	}
@@ -112,8 +112,8 @@ func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
 
 // @description Comparing files.
 // @tag.name File operations
-// @param first-id path int true "First file ID"
-// @param second-id path int true "Second file ID"
+// @param first-id query int true "First file ID"
+// @param second-id query int true "Second file ID"
 // @produce json
 // @success 200 {object} Comparision
 // @failure 400 {object} FileStatusResponse

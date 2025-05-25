@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
 
 const (
 	downloadFilePattern = "/files/download/{id}"
+	analyzeFilePattern  = "/files/analyze/{id}"
+	wordCloudPattern    = "/files/wordcloud/{id}"
 )
 
 func writeFileStatusResponse(w http.ResponseWriter, id int, msg string, statusCode int) {
@@ -35,19 +38,21 @@ func tryParseParamFromUrl(url string, pattern string, param string) error {
 }
 
 func tryParseParamFromUrlAndSendRequest(w http.ResponseWriter, r *http.Request, pattern string, param string) (*http.Response, error) {
-	err := tryParseParamFromUrl(r.URL.Path, downloadFilePattern, "{id}")
+	err := tryParseParamFromUrl(r.URL.Path, pattern, param)
 	if err != nil {
 		writeFileStatusResponse(w, -1, err.Error(), http.StatusBadRequest)
 		return nil, err
 	}
 	path := r.URL.Path
-	request, _ := http.NewRequest("GET", fmt.Sprintf("http://core-service:8081/%s", path), nil)
+	log.Printf("Sending request to core service for path: %s", path)
+	request, _ := http.NewRequest("GET", fmt.Sprintf("http://core-service:8081%s", path), nil)
 	client := http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
 		writeFileStatusResponse(w, -1, err.Error(), http.StatusInternalServerError)
 		return nil, err
 	}
+	log.Printf("Received response from core service for path %s: %d", path, response.StatusCode)
 	return response, nil
 }
 

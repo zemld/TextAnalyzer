@@ -15,3 +15,9 @@ type Analysis struct {
 	AverageWordsPerSentence      float64 `json:"average_words_per_sentence"`
 	AverageLengthOfWords         float64 `json:"average_length_of_words"`
 }
+
+type Comparision struct {
+	FirstId            int     `json:"first_id"`
+	SecondId           int     `json:"second_id"`
+	MatchingPercentage float64 `json:"matching_percentage"`
+}

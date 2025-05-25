@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 // @description Uploading file.
@@ -114,9 +115,37 @@ func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
 // @param first-id path int true "First file ID"
 // @param second-id path int true "Second file ID"
 // @produce json
-// @success 200 {object} models.CompareResponse
-// @failure 500 {object} models.FileStatusResponse
-// @router /files/compare/{first-id}/{second-id} [get]
+// @success 200 {object} Comparision
+// @failure 400 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
+// @router /files/compare [get]
 func CompareFilesHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файлов. Прокидываем запрос дальше на ядро.
+	firstId, err := strconv.Atoi(r.URL.Query().Get("first-id"))
+	if err != nil {
+		writeFileStatusResponse(w, -1, "Cannot get first file ID.", http.StatusBadRequest)
+		return
+	}
+	secondId, err := strconv.Atoi(r.URL.Query().Get("second-id"))
+	if err != nil {
+		writeFileStatusResponse(w, -1, "Cannot get second file ID.", http.StatusBadRequest)
+		return
+	}
+	request, _ := http.NewRequest("GET", "http://core-service:8081/files/compare", nil)
+	q := request.URL.Query()
+	q.Add("first-id", strconv.Itoa(firstId))
+	q.Add("second-id", strconv.Itoa(secondId))
+	request.URL.RawQuery = q.Encode()
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		writeFileStatusResponse(w, -1, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer response.Body.Close()
+	responseBody, _ := io.ReadAll(response.Body)
+	var comparision Comparision
+	if err = json.Unmarshal(responseBody, &comparision); err != nil {
+		writeFileStatusResponse(w, -1, "Cannot get result.", response.StatusCode)
+	}
+	writeComparisionResponse(w, comparision)
 }

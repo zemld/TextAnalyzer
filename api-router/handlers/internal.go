@@ -57,3 +57,10 @@ func writeAnalysisResponse(w http.ResponseWriter, analysis Analysis) {
 	w.Write(encodedAnalysis)
 	w.WriteHeader(http.StatusOK)
 }
+
+func writeComparisionResponse(w http.ResponseWriter, comparision Comparision) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	encodedComparision, _ := json.Marshal(comparision)
+	w.Write(encodedComparision)
+}

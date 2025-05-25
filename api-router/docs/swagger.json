@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "api-router:8080",
+    "host": "localhost:8080",
     "basePath": "/",
     "paths": {
         "/files/analyze/{id}": {
@@ -57,14 +57,14 @@
                         "type": "integer",
                         "description": "First file ID",
                         "name": "first-id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Second file ID",
                         "name": "second-id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],

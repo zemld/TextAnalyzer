@@ -63,14 +63,14 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "First file ID",
                         "name": "first-id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Second file ID",
                         "name": "second-id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -267,7 +267,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "api-router:8080",
+	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "API",

@@ -11,7 +11,7 @@ import (
 // @title API
 // @version 1.0
 // @description API for Text Analyzer.
-// @host api-router:8080
+// @host localhost:8080
 // @BasePath /
 func main() {
 	router := chi.NewRouter()
@@ -23,6 +23,6 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./docs"))
 	router.Handle("/docs/*", http.StripPrefix("/docs/", fs))
-	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8081/docs/swagger.json")))
+	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/swagger.json")))
 	http.ListenAndServe(":8080", router)
 }

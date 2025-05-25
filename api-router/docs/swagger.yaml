@@ -35,7 +35,7 @@ definitions:
       status:
         type: string
     type: object
-host: api-router:8080
+host: localhost:8080
 info:
   contact: {}
   description: API for Text Analyzer.
@@ -71,12 +71,12 @@ paths:
       description: Comparing files.
       parameters:
       - description: First file ID
-        in: path
+        in: query
         name: first-id
         required: true
         type: integer
       - description: Second file ID
-        in: path
+        in: query
         name: second-id
         required: true
         type: integer

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/zemld/TextAnalyzer/api-router/handlers"
 )
 
@@ -18,8 +19,10 @@ func main() {
 	router.Get("/files/download/{id}", handlers.DownloadFileHandler)
 	router.Get("/files/analyze/{id}", handlers.AnalyzeFileHandler)
 	router.Get("/files/wordcloud/{id}", handlers.WordCloudHandler)
-	router.Get("/files/compare/{first-id}/{second-id}", handlers.CompareFilesHandler)
+	router.Get("/files/compare", handlers.CompareFilesHandler)
 
-	// TODO: по-хорошему здесь надо делать проверку исключений, чтобы если че программа не падала.
+	fs := http.FileServer(http.Dir("./docs"))
+	router.Handle("/docs/*", http.StripPrefix("/docs/", fs))
+	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8081/docs/swagger.json")))
 	http.ListenAndServe(":8080", router)
 }

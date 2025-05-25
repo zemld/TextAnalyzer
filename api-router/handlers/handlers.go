@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -53,21 +52,14 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/download/{id} [get]
 func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
-	err := tryParseParamFromUrl(r.URL.Path, downloadFilePattern, "{id}")
+	response, err := tryParseParamFromUrlAndSendRequest(w, r, downloadFilePattern, "{id}")
 	if err != nil {
-		writeFileStatusResponse(w, -1, err.Error(), http.StatusBadRequest)
-		return
-	}
-	path := r.URL.Path
-	request, _ := http.NewRequest("GET", fmt.Sprintf("http://core-service:8081/%s", path), nil)
-	client := http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		writeFileStatusResponse(w, -1, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer response.Body.Close()
 	responseBody, _ := io.ReadAll(response.Body)
+	status := response.StatusCode
+	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write(responseBody)
 }
@@ -76,11 +68,23 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @tag.name File operations
 // @param id path int true "File ID"
 // @produce json
-// @success 200 {object} models.AnalysisResponse
-// @failure 500 {object} models.FileStatusResponse
+// @success 200 {object} Analysis
+// @failure 400 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/analyze/{id} [get]
 func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Прокидываем запрос дальше на ядро.
+	response, err := tryParseParamFromUrlAndSendRequest(w, r, downloadFilePattern, "{id}")
+	if err != nil {
+		return
+	}
+	defer response.Body.Close()
+	responseBody, _ := io.ReadAll(response.Body)
+	status := response.StatusCode
+	var analysis Analysis
+	if err = json.Unmarshal(responseBody, &analysis); err != nil {
+		writeFileStatusResponse(w, -1, "Cannot get result.", status)
+	}
+	writeAnalysisResponse(w, analysis)
 }
 
 // @description Getting word cloud.

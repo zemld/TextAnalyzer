@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -52,7 +53,23 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} FileStatusResponse
 // @router /files/download/{id} [get]
 func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Прокидываем запрос дальше на ядро.
+	err := tryParseParamFromUrl(r.URL.Path, downloadFilePattern, "{id}")
+	if err != nil {
+		writeFileStatusResponse(w, -1, err.Error(), http.StatusBadRequest)
+		return
+	}
+	path := r.URL.Path
+	request, _ := http.NewRequest("GET", fmt.Sprintf("http://core-service:8081/%s", path), nil)
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		writeFileStatusResponse(w, -1, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer response.Body.Close()
+	responseBody, _ := io.ReadAll(response.Body)
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write(responseBody)
 }
 
 // @description Analyzing file.

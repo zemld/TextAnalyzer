@@ -96,7 +96,16 @@ func AnalyzeFileHandler(w http.ResponseWriter, r *http.Request) {
 // @failure 500 {object} models.FileStatusResponse
 // @router /files/wordcloud/{id} [get]
 func WordCloudHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: получаем на вход айди файла. Прокидываем запрос дальше на ядро.
+	response, err := tryParseParamFromUrlAndSendRequest(w, r, downloadFilePattern, "{id}")
+	if err != nil {
+		return
+	}
+	defer response.Body.Close()
+	responseBody, _ := io.ReadAll(response.Body)
+	status := response.StatusCode
+	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(responseBody)
 }
 
 // @description Comparing files.

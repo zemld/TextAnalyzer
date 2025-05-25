@@ -1,34 +1,45 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 )
 
 // @description Uploading file.
 // @tag.name File operations
-// @param file formData file true "File to upload"
+// @param file body string true "File to upload"
 // @produce json
-// @success 200 {object} models.FileStatusResponse
-// @failure 500 {object} models.FileStatusResponse
+// @success 200 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/upload [post]
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	buffer, contentType, err := parseFileFromRequest(w, r)
+	body := r.Body
+	defer body.Close()
+	fileContent, err := io.ReadAll(body)
 	if err != nil {
+		writeFileStatusResponse(w, -1, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if len(fileContent) == 0 {
+		writeFileStatusResponse(w, -1, "File is empty", http.StatusBadRequest)
+		return
+	}
+	contentToSend := bytes.NewBuffer(fileContent)
+	request, _ := http.NewRequest("POST", "http://core-service:8081/files/upload", contentToSend)
 
-	request, _ := http.NewRequest("POST", "http://core-service:8081/files/upload", buffer)
-	request.Header.Set("Content-Type", contentType)
-	c := http.Client{}
-	response, err := c.Do(request)
+	client := http.Client{}
+	response, err := client.Do(request)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeFileStatusResponse(w, -1, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(response.StatusCode)
+	defer response.Body.Close()
 	responseBody, _ := io.ReadAll(response.Body)
-	w.Write(responseBody)
+	var fileStatus FileStatusResponse
+	json.Unmarshal(responseBody, &fileStatus)
+	writeFileStatusResponse(w, fileStatus.Id, fileStatus.Status, response.StatusCode)
 }
 
 // @description Downloading file.
@@ -37,7 +48,8 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 // @produce plain
 // @produce json
 // @success 200 {file} blob
-// @failure 500 {object} models.FileStatusResponse
+// @failure 400 {object} FileStatusResponse
+// @failure 500 {object} FileStatusResponse
 // @router /files/download/{id} [get]
 func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: получаем на вход айди файла. Прокидываем запрос дальше на ядро.

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -355,7 +356,7 @@ func compareFiles(first Analysis, second Analysis) Comparision {
 		similarValues++
 	}
 	comparision := Comparision{FirstId: first.Id, SecondId: second.Id}
-	comparisonResult := float64(similarValues) / float64(totalValues) * 100
+	comparisonResult := float64(math.Round(float64(similarValues)/float64(totalValues)*10000)) / 100
 	comparision.MatchingPercentage = comparisonResult
 	return comparision
 }
